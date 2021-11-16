@@ -5,10 +5,6 @@
 #ifndef SHEEPRENDER_SR_VECTOR_H
 #define SHEEPRENDER_SR_VECTOR_H
 
-#include <string>
-#include <cassert>
-#include <cmath>
-
 namespace SR {
     template<int n>
     struct vector {
@@ -99,7 +95,7 @@ namespace SR {
 
         float magnitude() const { return std::sqrt(sqr_magnitude()); }
 
-        void normalize() { *this = (*this) / magnitude(); }
+        vector normalize() { *this = (*this) / magnitude(); }
 
         static float dot(const vector &lv, const vector &rv) { return lv * rv; }
     };
@@ -126,7 +122,7 @@ namespace SR {
 
         float magnitude() const { return std::sqrt(sqr_magnitude()); }
 
-        void normalize() { *this = (*this) / magnitude(); }
+        vector normalize() { *this = (*this) / magnitude(); }
 
         static float dot(const vector &lv, const vector &rv) { return lv * rv; }
 
@@ -137,6 +133,22 @@ namespace SR {
             ret.z = lv.x * rv.y + lv.y * rv.x;
             return ret;
         }
+
+        static vector right() { return {1, 0, 0}; }
+
+        static vector left() { return {-1, 0, 0}; }
+
+        static vector up() { return {0, 1, 0}; }
+
+        static vector down() { return {0, -1, 0}; }
+
+        static vector forward() { return {0, 0, 1}; }
+
+        static vector back() { return {0, 0, -1}; }
+
+        static vector one() { return {1, 1, 1}; }
+
+        static vector zero() { return {0, 0, 0}; }
     };
 
     template<>
@@ -161,7 +173,7 @@ namespace SR {
 
         float magnitude() const { return std::sqrt(sqr_magnitude()); }
 
-        void normalize() { *this = (*this) / magnitude(); }
+        vector normalize() { *this = (*this) / magnitude(); }
 
         static float dot(const vector &lv, const vector &rv) { return lv * rv; }
     };

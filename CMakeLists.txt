@@ -3,4 +3,4 @@ project(SheepRender)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(SheepRender main.cpp sr_matrix.h sr_vector.h sr_math.h)
+add_executable(SheepRender main.cpp sr_matrix.h sr_vector.h main.h)

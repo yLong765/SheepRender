@@ -5,9 +5,6 @@
 #ifndef SHEEPRENDER_SR_MATRIX_H
 #define SHEEPRENDER_SR_MATRIX_H
 
-#include <string>
-#include <cassert>
-
 namespace SR {
     template<int row, int col>
     struct matrix {
@@ -35,6 +32,19 @@ namespace SR {
             for (int j = 0; j < row; j++) {
                 m[j][i] = v[j];
             }
+        }
+
+        vector <col> get_row(int i) const {
+            assert(i >= 0 && i < col);
+            return m[i];
+        }
+
+        vector <row> get_col(int i) const {
+            vector<row> ret;
+            for (int j = 0; j < col; j++) {
+                ret[j] = (*this)[j][i];
+            }
+            return ret;
         }
 
         matrix<row, col> inverse() const {
@@ -67,6 +77,65 @@ namespace SR {
                 }
             }
             return ret;
+        }
+
+        matrix<row, col> set_translation(vec3 pos) {
+            assert(row == 4 && col == 4);
+            *this = identity();
+            (*this)[3][0] = pos[0];
+            (*this)[3][1] = pos[1];
+            (*this)[3][2] = pos[2];
+            return *this;
+        }
+
+        matrix<row, col> set_scale(vec3 pos) {
+            assert(row == 4 && col == 4);
+            *this = identity();
+            (*this)[0][0] = pos[0];
+            (*this)[1][1] = pos[1];
+            (*this)[2][2] = pos[2];
+            return *this;
+        }
+
+        matrix<row, col> set_rotation(vec3 pos, float theta) {
+            assert(row == 4 && col == 4);
+            float qsin = std::sin(theta);
+            float qcos = std::cos(theta);
+            *this = identity();
+            (*this)[0][0] = pos[0];
+            (*this)[1][1] = pos[1];
+            (*this)[2][2] = pos[2];
+            return *this;
+        }
+
+        static matrix<row, col> look_at(vec3 from, vec3 to, vec3 up) {
+            assert(row == 4 && col == 4);
+            vec3 zaxis = (to - from).normalize();
+            vec3 xaxis = vec3::cross(up, zaxis).normalize();
+            vec3 yaxis = vec3::cross(zaxis, xaxis);
+
+            return {{xaxis.x,                 yaxis.x,                 zaxis.x,                 0},
+                    {xaxis.y,                 yaxis.y,                 zaxis.y,                 0},
+                    {xaxis.z,                 yaxis.z,                 zaxis.z,                 0},
+                    {-vec3::dot(xaxis, from), -vec3::dot(yaxis, from), -vec3::dot(zaxis, from), 1}};
+        }
+
+        static matrix<row, col> orthographic(float width, float height, float near, float far) {
+            assert(row == 4 && col == 4);
+            return {{2 / width, 0,          0,                   0},
+                    {0,         2 / height, 0,                   0},
+                    {0,         0,          1 / (far - near),    0},
+                    {0,         0,          near / (far - near), 1}};
+        }
+
+        static matrix<row, col> perspective(float width, float height, float near, float far, float fov) {
+            assert(row == 4 && col == 4);
+            float ys = 1 / std::tan(fov / 2);
+            float xs = ys * (height / width);
+            return {{xs, 0,  0,                            0},
+                    {0,  ys, 0,                            0},
+                    {0,  0,  far / (far - near),           0},
+                    {0,  0,  (-near * far) / (far - near), 1}};
         }
     };
 
@@ -113,8 +182,7 @@ namespace SR {
         matrix<r1, c2> ret;
         for (int i = 0; i < r1; i++)
             for (int j = 0; j < c2; j++)
-                for (int k = 0; k < c1; k++)
-                    ret[i][j] += lm[i][k] * rm[k][j];
+                ret[i][j] = lm[i] * rm.get_col(j);
         return ret;
     }
 
