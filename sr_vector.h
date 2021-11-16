@@ -7,10 +7,10 @@
 
 namespace SR {
     template<int n>
-    struct vector {
+    struct sr_vector {
         float data[n] = {0};
 
-        vector() = default;
+        sr_vector() = default;
 
         float &operator[](const int i) {
             assert(i >= 0 && i < n);
@@ -24,49 +24,49 @@ namespace SR {
     };
 
     template<int n>
-    vector<n> operator+(const vector<n> &lv, const vector<n> &rv) {
-        vector<n> ret;
+    sr_vector<n> operator+(const sr_vector<n> &lv, const sr_vector<n> &rv) {
+        sr_vector<n> ret;
         for (int i = 0; i < n; i++) { ret[i] = lv[i] + rv[i]; }
         return ret;
     }
 
     template<int n>
-    vector<n> operator-(const vector<n> &lv, const vector<n> &rv) {
-        vector<n> ret;
+    sr_vector<n> operator-(const sr_vector<n> &lv, const sr_vector<n> &rv) {
+        sr_vector<n> ret;
         for (int i = 0; i < n; i++) { ret[i] = lv[i] - rv[i]; }
         return ret;
     }
 
     template<int n>
-    float operator*(const vector<n> &lv, const vector<n> &rv) {
+    float operator*(const sr_vector<n> &lv, const sr_vector<n> &rv) {
         float ret = 0;
         for (int i = 0; i < n; i++) { ret += lv[i] * rv[i]; }
         return ret;
     }
 
     template<int n>
-    vector<n> operator*(const vector<n> &lv, const int &val) {
-        vector<n> ret;
+    sr_vector<n> operator*(const sr_vector<n> &lv, const int &val) {
+        sr_vector<n> ret;
         for (int i = 0; i < n; i++) { ret[i] = lv[i] * val; }
         return ret;
     }
 
     template<int n>
-    vector<n> operator*(const int &num, const vector<n> &rv) {
-        vector<n> ret;
+    sr_vector<n> operator*(const int &num, const sr_vector<n> &rv) {
+        sr_vector<n> ret;
         for (int i = 0; i < n; i++) { ret[i] = num * rv[i]; }
         return ret;
     }
 
     template<int n>
-    vector<n> operator/(const vector<n> &lv, const int &val) {
-        vector<n> ret;
+    sr_vector<n> operator/(const sr_vector<n> &lv, const int &val) {
+        sr_vector<n> ret;
         for (int i = 0; i < n; i++) { ret[i] = lv[i] / val; }
         return ret;
     }
 
     template<int n>
-    std::ostream &operator<<(std::ostream &out, const vector<n> &v) {
+    std::ostream &operator<<(std::ostream &out, const sr_vector<n> &v) {
         out << "(";
         for (int i = 0; i < n - 1; i++) { out << v[i] << ","; }
         out << v[n - 1] << ")";
@@ -74,12 +74,12 @@ namespace SR {
     }
 
     template<>
-    struct vector<2> {
+    struct sr_vector<2> {
         float x, y;
 
-        vector() = default;
+        sr_vector() = default;
 
-        vector(float x, float y) : x(x), y(y) {}
+        sr_vector(float x, float y) : x(x), y(y) {}
 
         float &operator[](const int i) {
             assert(i >= 0 && i < 2);
@@ -95,18 +95,18 @@ namespace SR {
 
         float magnitude() const { return std::sqrt(sqr_magnitude()); }
 
-        vector normalize() { *this = (*this) / magnitude(); }
+        sr_vector normalize() { return *this = (*this) / magnitude(); }
 
-        static float dot(const vector &lv, const vector &rv) { return lv * rv; }
+        static float dot(const sr_vector &lv, const sr_vector &rv) { return lv * rv; }
     };
 
     template<>
-    struct vector<3> {
+    struct sr_vector<3> {
         float x, y, z;
 
-        vector() = default;
+        sr_vector() = default;
 
-        vector(float x, float y, float z) : x(x), y(y), z(z) {}
+        sr_vector(float x, float y, float z) : x(x), y(y), z(z) {}
 
         float &operator[](const int i) {
             assert(i >= 0 && i < 3);
@@ -122,42 +122,42 @@ namespace SR {
 
         float magnitude() const { return std::sqrt(sqr_magnitude()); }
 
-        vector normalize() { *this = (*this) / magnitude(); }
+        sr_vector normalize() { return *this = (*this) / magnitude(); }
 
-        static float dot(const vector &lv, const vector &rv) { return lv * rv; }
+        static float dot(const sr_vector &lv, const sr_vector &rv) { return lv * rv; }
 
-        static vector cross(const vector &lv, const vector &rv) {
-            vector ret{};
+        static sr_vector cross(const sr_vector &lv, const sr_vector &rv) {
+            sr_vector ret{};
             ret.x = lv.y * rv.z + lv.z * rv.y;
             ret.y = lv.z * rv.x + lv.x * rv.z;
             ret.z = lv.x * rv.y + lv.y * rv.x;
             return ret;
         }
 
-        static vector right() { return {1, 0, 0}; }
+        static sr_vector right() { return {1, 0, 0}; }
 
-        static vector left() { return {-1, 0, 0}; }
+        static sr_vector left() { return {-1, 0, 0}; }
 
-        static vector up() { return {0, 1, 0}; }
+        static sr_vector up() { return {0, 1, 0}; }
 
-        static vector down() { return {0, -1, 0}; }
+        static sr_vector down() { return {0, -1, 0}; }
 
-        static vector forward() { return {0, 0, 1}; }
+        static sr_vector forward() { return {0, 0, 1}; }
 
-        static vector back() { return {0, 0, -1}; }
+        static sr_vector back() { return {0, 0, -1}; }
 
-        static vector one() { return {1, 1, 1}; }
+        static sr_vector one() { return {1, 1, 1}; }
 
-        static vector zero() { return {0, 0, 0}; }
+        static sr_vector zero() { return {0, 0, 0}; }
     };
 
     template<>
-    struct vector<4> {
+    struct sr_vector<4> {
         float x, y, z, w;
 
-        vector() = default;
+        sr_vector() = default;
 
-        vector(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+        sr_vector(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 
         float &operator[](const int i) {
             assert(i >= 0 && i < 4);
@@ -173,14 +173,14 @@ namespace SR {
 
         float magnitude() const { return std::sqrt(sqr_magnitude()); }
 
-        vector normalize() { *this = (*this) / magnitude(); }
+        sr_vector normalize() { return *this = (*this) / magnitude(); }
 
-        static float dot(const vector &lv, const vector &rv) { return lv * rv; }
+        static float dot(const sr_vector &lv, const sr_vector &rv) { return lv * rv; }
     };
 
-    typedef vector<2> vec2;
-    typedef vector<3> vec3;
-    typedef vector<4> vec4;
+    typedef sr_vector<2> vec2;
+    typedef sr_vector<3> vec3;
+    typedef sr_vector<4> vec4;
 }
 
 #endif //SHEEPRENDER_SR_VECTOR_H

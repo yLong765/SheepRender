@@ -8,39 +8,39 @@
 namespace SR {
     template<int row, int col>
     struct matrix {
-        vector <col> m[row] = {{}};
+        sr_vector <col> m[row] = {{}};
 
         matrix() = default;
 
-        vector <col> &operator[](const int i) {
+        sr_vector <col> &operator[](const int i) {
             assert(i >= 0 && i < row);
             return m[i];
         }
 
-        const vector <col> &operator[](const int i) const {
+        const sr_vector <col> &operator[](const int i) const {
             assert(i >= 0 && i < row);
             return m[i];
         }
 
-        void set_row(int i, const vector <col> &v) {
+        void set_row(int i, const sr_vector <col> &v) {
             assert(i >= 0 && i < col);
             m[i] = v;
         }
 
-        void set_col(int i, const vector <row> &v) {
+        void set_col(int i, const sr_vector <row> &v) {
             assert(i >= 0 && i < row);
             for (int j = 0; j < row; j++) {
                 m[j][i] = v[j];
             }
         }
 
-        vector <col> get_row(int i) const {
+        sr_vector <col> get_row(int i) const {
             assert(i >= 0 && i < col);
             return m[i];
         }
 
-        vector <row> get_col(int i) const {
-            vector<row> ret;
+        sr_vector <row> get_col(int i) const {
+            sr_vector<row> ret;
             for (int j = 0; j < col; j++) {
                 ret[j] = (*this)[j][i];
             }

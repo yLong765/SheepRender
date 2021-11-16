@@ -12,5 +12,6 @@
 
 #include "sr_vector.h"
 #include "sr_matrix.h"
+#include "sr_screen.h"
 
 #endif //SHEEPRENDER_MAIN_H

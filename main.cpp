@@ -3,8 +3,15 @@
 using namespace SR;
 
 int main() {
-    mat2x2 m = mat2x2::identity();
-    m.set_translation({1, 2, 3});
-    std::cout << m << std::endl;
+    screen screen = screen::create(800, 600, "sheep render");
+
+    MSG msg;
+    while (GetMessage(&msg, screen.handle, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+
+        screen.update();
+    }
+
     return 0;
 }
