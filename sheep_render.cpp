@@ -1,4 +1,4 @@
-#include "main.h"
+#include "sheep_render.h"
 
 using namespace SR;
 
