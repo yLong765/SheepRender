@@ -10,11 +10,12 @@
 namespace SR {
     static int keys[512];
 
-    struct sr_screen {
+    typedef struct sr_screen {
         HWND handle;
         int width;
         int height;
         HDC memory_dc;
+        UCHAR *frame_buffer;
 
         void update() const {
             HDC hDC = GetDC(handle);
@@ -112,11 +113,10 @@ namespace SR {
             screen.width = width;
             screen.height = height;
             screen.memory_dc = memory_dc;
+            screen.frame_buffer = (UCHAR *) ptr;
             return screen;
         }
-    };
-
-    typedef sr_screen screen;
+    } screen;
 }
 
 #endif //SHEEPRENDER_SR_SCREEN_H

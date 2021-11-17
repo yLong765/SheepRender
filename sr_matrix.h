@@ -41,7 +41,7 @@ namespace SR {
 
         sr_vector <row> get_col(int i) const {
             sr_vector<row> ret;
-            for (int j = 0; j < col; j++) {
+            for (int j = 0; j < row; j++) {
                 ret[j] = (*this)[j][i];
             }
             return ret;
@@ -79,63 +79,58 @@ namespace SR {
             return ret;
         }
 
-        matrix<row, col> set_translation(vec3 pos) {
+        static matrix<row, col> get_translation(vec3 val) {
             assert(row == 4 && col == 4);
-            *this = identity();
-            (*this)[3][0] = pos[0];
-            (*this)[3][1] = pos[1];
-            (*this)[3][2] = pos[2];
-            return *this;
+            matrix<4, 4> m = identity();
+            m[3][0] = val[0];
+            m[3][1] = val[1];
+            m[3][2] = val[2];
+            return m;
         }
 
-        matrix<row, col> set_scale(vec3 pos) {
+        static matrix<row, col> get_scale(vec3 val) {
             assert(row == 4 && col == 4);
-            *this = identity();
-            (*this)[0][0] = pos[0];
-            (*this)[1][1] = pos[1];
-            (*this)[2][2] = pos[2];
-            return *this;
+            matrix<4, 4> m = identity();
+            m[0][0] = val[0];
+            m[1][1] = val[1];
+            m[2][2] = val[2];
+            return m;
         }
 
-        matrix<row, col> set_rotation(vec3 pos, float theta) {
+        static matrix<row, col> get_x_rotation(float angle) {
             assert(row == 4 && col == 4);
-            float qsin = std::sin(theta);
-            float qcos = std::cos(theta);
-            *this = identity();
-            (*this)[0][0] = pos[0];
-            (*this)[1][1] = pos[1];
-            (*this)[2][2] = pos[2];
-            return *this;
+            float c = std::cos(angle);
+            float s = std::sin(angle);
+            matrix<4, 4> m = identity();
+            m[1][1] = c;
+            m[1][2] = -s;
+            m[2][1] = s;
+            m[2][2] = c;
+            return m;
         }
 
-        static matrix<row, col> look_at(vec3 from, vec3 to, vec3 up) {
+        static matrix<row, col> get_y_rotation(float angle) {
             assert(row == 4 && col == 4);
-            vec3 zaxis = (to - from).normalize();
-            vec3 xaxis = vec3::cross(up, zaxis).normalize();
-            vec3 yaxis = vec3::cross(zaxis, xaxis);
-
-            return {{xaxis.x,                 yaxis.x,                 zaxis.x,                 0},
-                    {xaxis.y,                 yaxis.y,                 zaxis.y,                 0},
-                    {xaxis.z,                 yaxis.z,                 zaxis.z,                 0},
-                    {-vec3::dot(xaxis, from), -vec3::dot(yaxis, from), -vec3::dot(zaxis, from), 1}};
+            float c = std::cos(angle);
+            float s = std::sin(angle);
+            matrix<4, 4> m = identity();
+            m[0][0] = c;
+            m[0][2] = s;
+            m[2][0] = -s;
+            m[2][2] = c;
+            return m;
         }
 
-        static matrix<row, col> orthographic(float width, float height, float near, float far) {
+        static matrix<row, col> get_z_rotation(float angle) {
             assert(row == 4 && col == 4);
-            return {{2 / width, 0,          0,                   0},
-                    {0,         2 / height, 0,                   0},
-                    {0,         0,          1 / (far - near),    0},
-                    {0,         0,          near / (far - near), 1}};
-        }
-
-        static matrix<row, col> perspective(float width, float height, float near, float far, float fov) {
-            assert(row == 4 && col == 4);
-            float ys = 1 / std::tan(fov / 2);
-            float xs = ys * (height / width);
-            return {{xs, 0,  0,                            0},
-                    {0,  ys, 0,                            0},
-                    {0,  0,  far / (far - near),           0},
-                    {0,  0,  (-near * far) / (far - near), 1}};
+            float c = std::cos(angle);
+            float s = std::sin(angle);
+            matrix<4, 4> m = identity();
+            m[0][0] = c;
+            m[0][1] = -s;
+            m[1][0] = s;
+            m[1][1] = c;
+            return m;
         }
     };
 
@@ -169,7 +164,7 @@ namespace SR {
     }
 
     template<int row, int col>
-    matrix<row, col> operator*(const matrix<row, col> &m, const float val) {
+    matrix<row, col> operator*(const matrix<row, col> &m, const float &val) {
         matrix<row, col> ret;
         for (int i = 0; i < row; i++)
             for (int j = 0; j < col; j++)
@@ -178,7 +173,7 @@ namespace SR {
     }
 
     template<int r1, int c1, int c2>
-    matrix<r1, c2> operator*(const matrix<r1, c1> &lm, const matrix<c1, c2> rm) {
+    matrix<r1, c2> operator*(const matrix<r1, c1> &lm, const matrix<c1, c2> &rm) {
         matrix<r1, c2> ret;
         for (int i = 0; i < r1; i++)
             for (int j = 0; j < c2; j++)
@@ -186,8 +181,15 @@ namespace SR {
         return ret;
     }
 
+    template<int c1, int c2>
+    sr_vector <c2> operator*(const sr_vector <c2> &lv, const matrix<c1, c2> &rm) {
+        sr_vector<c2> ret;
+        for (int j = 0; j < c2; j++) { ret[j] = lv * rm.get_col(j); }
+        return ret;
+    }
+
     template<int row, int col>
-    matrix<row, col> operator/(const matrix<row, col> &m, const float val) {
+    matrix<row, col> operator/(const matrix<row, col> &m, const float &val) {
         matrix<row, col> ret;
         for (int i = 0; i < row; i++)
             for (int j = 0; j < col; j++)

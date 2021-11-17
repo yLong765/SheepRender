@@ -45,22 +45,24 @@ namespace SR {
     }
 
     template<int n>
-    sr_vector<n> operator*(const sr_vector<n> &lv, const int &val) {
-        sr_vector<n> ret;
-        for (int i = 0; i < n; i++) { ret[i] = lv[i] * val; }
+    sr_vector<n> operator*(const sr_vector<n> &lv, const float &val) {
+        sr_vector<n> ret{};
+        for (int i = 0; i < n; i++) {
+            ret[i] = lv[i] * val;
+        }
         return ret;
     }
 
     template<int n>
-    sr_vector<n> operator*(const int &num, const sr_vector<n> &rv) {
+    sr_vector<n> operator*(const float &num, const sr_vector<n> &rv) {
         sr_vector<n> ret;
         for (int i = 0; i < n; i++) { ret[i] = num * rv[i]; }
         return ret;
     }
 
     template<int n>
-    sr_vector<n> operator/(const sr_vector<n> &lv, const int &val) {
-        sr_vector<n> ret;
+    sr_vector<n> operator/(const sr_vector<n> &lv, const float &val) {
+        sr_vector<n> ret{};
         for (int i = 0; i < n; i++) { ret[i] = lv[i] / val; }
         return ret;
     }
@@ -122,15 +124,22 @@ namespace SR {
 
         float magnitude() const { return std::sqrt(sqr_magnitude()); }
 
-        sr_vector normalize() { return *this = (*this) / magnitude(); }
+        sr_vector normalize() {
+            float l = magnitude();
+            if (l != 0.0f) {
+                float inv = 1.0f / l;
+                *this = (*this) * inv;
+            }
+            return *this;
+        }
 
         static float dot(const sr_vector &lv, const sr_vector &rv) { return lv * rv; }
 
         static sr_vector cross(const sr_vector &lv, const sr_vector &rv) {
             sr_vector ret{};
-            ret.x = lv.y * rv.z + lv.z * rv.y;
-            ret.y = lv.z * rv.x + lv.x * rv.z;
-            ret.z = lv.x * rv.y + lv.y * rv.x;
+            ret.x = lv.y * rv.z - lv.z * rv.y;
+            ret.y = lv.z * rv.x - lv.x * rv.z;
+            ret.z = lv.x * rv.y - lv.y * rv.x;
             return ret;
         }
 
@@ -158,6 +167,8 @@ namespace SR {
         sr_vector() = default;
 
         sr_vector(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+
+        sr_vector<4>(sr_vector<3> v, float w) : x(v.x), y(v.y), z(v.z), w(w) {}
 
         float &operator[](const int i) {
             assert(i >= 0 && i < 4);
