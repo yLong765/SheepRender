@@ -84,9 +84,9 @@ namespace SR {
         }
 
         void draw_triangle_wireframe(vec4 v1, vec4 v2, vec4 v3, color color) {
-            draw_line(v1.x, v1.y, v2.x, v2.y, color);
-            draw_line(v2.x, v2.y, v3.x, v3.y, color);
-            draw_line(v3.x, v3.y, v1.x, v1.y, color);
+            draw_line((int) v1.x, (int) v1.y, (int) v2.x, (int) v2.y, color);
+            draw_line((int) v2.x, (int) v2.y, (int) v3.x, (int) v3.y, color);
+            draw_line((int) v3.x, (int) v3.y, (int) v1.x, (int) v1.y, color);
         }
     } render;
 }
