@@ -9,18 +9,18 @@ namespace SR {
     typedef struct sr_render {
         int width;
         int height;
-        UINT *frame_buffer;
+        sr_texture_2d *texture;
         float *z_buffer;
 
-        sr_render(UINT *buffer, int width, int height) {
-            this->width = width;
-            this->height = height;
-            frame_buffer = buffer;
-            z_buffer = (float *) malloc(sizeof(float) * width * height);
+        sr_render(sr_texture_2d *texture) {
+            this->width = texture->width;
+            this->height = texture->height;
+            this->texture = texture;
+            this->z_buffer = (float *) malloc(sizeof(float) * width * height);
         }
 
         void set_color(int index, color color) const {
-            frame_buffer[index] = color.get_pixel_color();
+            (*texture)[index] = color;
         }
 
         void clear_color(color color) const {

@@ -5,8 +5,6 @@
 #ifndef SHEEPRENDER_SR_SCREEN_H
 #define SHEEPRENDER_SR_SCREEN_H
 
-#include <windows.h>
-
 namespace SR {
     static int keys[512];
     static int screen_exit;
@@ -18,8 +16,14 @@ namespace SR {
         HDC memory_dc;
         UINT *frame_buffer;
 
-        void update_buffer(UINT *buffer) {
-            frame_buffer = ;
+        void set_buffer(sr_texture_2d *texture) {
+            int pixel_count = width * height;
+            for (int i = 0; i < pixel_count; i++) {
+                frame_buffer[i] = (*texture)[i].get_pixel_color();
+            }
+        }
+
+        void update_hdc() {
             HDC hDC = GetDC(handle);
             BitBlt(hDC, 0, 0, width, height, memory_dc, 0, 0, SRCCOPY);
             ReleaseDC(handle, hDC);

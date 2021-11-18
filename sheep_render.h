@@ -14,17 +14,20 @@
 #include <cmath>
 #include <map>
 #include <vector>
+#include <windows.h>
 
 #include "sr_macro.h"
 
 // math
 #include "sr_vector.h"
 #include "sr_matrix.h"
-#include "sr_screen.h"
 
 // vertex data
 #include "sr_color.h"
 #include "sr_texcoord.h"
+
+#include "sr_texture_2d.h"
+#include "sr_screen.h"
 
 // component
 #include "sr_transform.h"

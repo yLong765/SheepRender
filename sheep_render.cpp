@@ -7,8 +7,9 @@ int width = 800, height = 600;
 int main() {
     screen screen = create_screen(width, height, "sheep render");
     camera camera(vec3(0, 0, -3.5f), vec3::zero(), vec3::up(), width, height);
-    object model("D:/Work/C++/ClionProject/SheepRender/model/cube.obj");
-    render render(camera.frame_buffer, width, height);
+    object model("../model/cube.obj");
+    texture_2d texture(width, height);
+    render render(&texture);
 
     while (screen_exit == 0) {
         screen.dispatch();
@@ -40,7 +41,8 @@ int main() {
             render.draw_triangle_wireframe(p1, p2, p3, color(1.0f, 0.0f, 0.0f));
         }
 
-        screen.update_buffer(camera.frame_buffer);
+        screen.set_buffer(&texture);
+        screen.update_hdc();
         Sleep(1);
     }
 

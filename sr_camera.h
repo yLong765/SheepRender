@@ -10,7 +10,6 @@ namespace SR {
         vec3 from{}, to{}, up{};
         int w, h;
         float n, f, fovy;
-        UINT *frame_buffer;
 
         sr_camera(vec3 from, vec3 to, vec3 up, int w, int h, float n = 1.0f, float f = 500.0f, float fovy = PI * 0.5f) {
             this->from = from;
@@ -21,7 +20,6 @@ namespace SR {
             this->n = n;
             this->f = f;
             this->fovy = fovy;
-            frame_buffer = (UINT *) malloc(w * h * sizeof(UINT));
         }
 
         mat4x4 get_look_at_matrix() const {
