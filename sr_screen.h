@@ -16,10 +16,10 @@ namespace SR {
         int width;
         int height;
         HDC memory_dc;
-        UCHAR *frame_buffer;
-        int exit = 0;
+        UINT *frame_buffer;
 
-        void update() const {
+        void update_buffer(UINT *buffer) {
+            frame_buffer = ;
             HDC hDC = GetDC(handle);
             BitBlt(hDC, 0, 0, width, height, memory_dc, 0, 0, SRCCOPY);
             ReleaseDC(handle, hDC);
@@ -119,9 +119,9 @@ namespace SR {
         screen.width = width;
         screen.height = height;
         screen.memory_dc = memory_dc;
-        screen.frame_buffer = (UCHAR *) ptr;
+        screen.frame_buffer = (UINT *) ptr;
 
-        memset(screen.frame_buffer, 0, width * height * sizeof(UCHAR));
+        memset(screen.frame_buffer, 0, width * height * sizeof(UINT));
 
         return screen;
     }

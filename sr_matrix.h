@@ -81,56 +81,65 @@ namespace SR {
 
         static matrix<row, col> get_translation(vec3 val) {
             assert(row == 4 && col == 4);
-            matrix<4, 4> m = identity();
-            m[3][0] = val[0];
-            m[3][1] = val[1];
-            m[3][2] = val[2];
-            return m;
+            matrix<4, 4> ret = identity();
+            ret[3][0] = val[0];
+            ret[3][1] = val[1];
+            ret[3][2] = val[2];
+            return ret;
         }
 
         static matrix<row, col> get_scale(vec3 val) {
             assert(row == 4 && col == 4);
-            matrix<4, 4> m = identity();
-            m[0][0] = val[0];
-            m[1][1] = val[1];
-            m[2][2] = val[2];
-            return m;
+            matrix<4, 4> ret = identity();
+            ret[0][0] = val[0];
+            ret[1][1] = val[1];
+            ret[2][2] = val[2];
+            return ret;
         }
 
         static matrix<row, col> get_x_rotation(float angle) {
             assert(row == 4 && col == 4);
             float c = std::cos(angle);
             float s = std::sin(angle);
-            matrix<4, 4> m = identity();
-            m[1][1] = c;
-            m[1][2] = -s;
-            m[2][1] = s;
-            m[2][2] = c;
-            return m;
+            matrix<4, 4> ret = identity();
+            ret[1][1] = c;
+            ret[1][2] = -s;
+            ret[2][1] = s;
+            ret[2][2] = c;
+            return ret;
         }
 
         static matrix<row, col> get_y_rotation(float angle) {
             assert(row == 4 && col == 4);
             float c = std::cos(angle);
             float s = std::sin(angle);
-            matrix<4, 4> m = identity();
-            m[0][0] = c;
-            m[0][2] = s;
-            m[2][0] = -s;
-            m[2][2] = c;
-            return m;
+            matrix<4, 4> ret = identity();
+            ret[0][0] = c;
+            ret[0][2] = s;
+            ret[2][0] = -s;
+            ret[2][2] = c;
+            return ret;
         }
 
         static matrix<row, col> get_z_rotation(float angle) {
             assert(row == 4 && col == 4);
             float c = std::cos(angle);
             float s = std::sin(angle);
-            matrix<4, 4> m = identity();
-            m[0][0] = c;
-            m[0][1] = -s;
-            m[1][0] = s;
-            m[1][1] = c;
-            return m;
+            matrix<4, 4> ret = identity();
+            ret[0][0] = c;
+            ret[0][1] = -s;
+            ret[1][0] = s;
+            ret[1][1] = c;
+            return ret;
+        }
+
+        static matrix<row, col> get_rotation(float x, float y, float z) {
+            assert(row == 4 && col == 4);
+            matrix<4, 4> ret = identity();
+            ret = ret * get_z_rotation(z);
+            ret = ret * get_y_rotation(y);
+            ret = ret * get_x_rotation(x);
+            return ret;
         }
     };
 

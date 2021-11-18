@@ -7,6 +7,8 @@
 
 // base
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <cassert>
 #include <cmath>
@@ -23,15 +25,17 @@
 // vertex data
 #include "sr_color.h"
 #include "sr_texcoord.h"
-#include "sr_vertex.h"
 
 // component
 #include "sr_transform.h"
+#include "shader/sr_shader_inc.h"
 #include "sr_mesh.h"
 #include "sr_camera.h"
+#include "sr_render.h"
+
+#include "sr_obj_loader.h"
 
 #include "sr_object.h"
 
-#include "sr_render.h"
 
 #endif //SHEEPRENDER_SHEEP_RENDER_H

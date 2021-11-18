@@ -7,9 +7,11 @@
 
 namespace SR {
     typedef struct sr_mesh {
-        std::vector<vertex> vertices;
-        std::vector<int> triangles;
+        std::vector<vec3> vertices;
         std::vector<vec3> normals;
+        std::vector<vec2> uv;
+        std::vector<int> triangles;
+        sr_shader *shader;
 
         sr_mesh() = default;
     } mesh;

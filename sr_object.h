@@ -10,8 +10,8 @@ namespace SR {
         sr_transform transform;
         sr_mesh mesh;
 
-        void update() {
-            transform.update();
+        sr_object(const char *path) {
+            mesh = obj_loader::load(path);
         }
     } object;
 }

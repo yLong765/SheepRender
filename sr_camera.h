@@ -7,29 +7,21 @@
 
 namespace SR {
     typedef struct sr_camera {
-        vec3 from{};
-        vec3 to{};
-        vec3 up{};
-        float n;
-        float f;
-        float fovy;
+        vec3 from{}, to{}, up{};
+        int w, h;
+        float n, f, fovy;
+        UINT *frame_buffer;
 
-        sr_camera() {
-            from = vec3(0, 0, -10);
-            to = vec3::zero();
-            up = vec3::up();
-            n = 1.0f;
-            f = 500.0f;
-            fovy = PI * 0.5f;
-        }
-
-        sr_camera(vec3 from, vec3 to, vec3 up) {
+        sr_camera(vec3 from, vec3 to, vec3 up, int w, int h, float n = 1.0f, float f = 500.0f, float fovy = PI * 0.5f) {
             this->from = from;
             this->to = to;
             this->up = up;
-            n = 1.0f;
-            f = 500.0f;
-            fovy = PI * 0.5f;
+            this->w = w;
+            this->h = h;
+            this->n = n;
+            this->f = f;
+            this->fovy = fovy;
+            frame_buffer = (UINT *) malloc(w * h * sizeof(UINT));
         }
 
         mat4x4 get_look_at_matrix() const {
@@ -45,7 +37,7 @@ namespace SR {
             return ret;
         }
 
-        mat4x4 get_orthographic_matrix(float w, float h) const {
+        mat4x4 get_orthographic_matrix() const {
             mat4x4 ret;
             ret.set_row(0, vec4(2 / w, 0, 0, 0));
             ret.set_row(1, vec4(0, 2 / h, 0, 0));
@@ -54,9 +46,9 @@ namespace SR {
             return ret;
         }
 
-        mat4x4 get_perspective_matrix(float w, float h) const {
+        mat4x4 get_perspective_matrix() const {
             float fax = 1.0f / (float) std::tan(fovy * 0.5f);
-            float aspect = w / h;
+            float aspect = (float) w / (float) h;
             mat4x4 ret = mat4x4::zero();
             ret[0][0] = (float) (fax / aspect);
             ret[1][1] = (float) (fax);
@@ -66,7 +58,7 @@ namespace SR {
             return ret;
         }
 
-        vec4 homogenize(float w, float h, const vec4 v) {
+        vec4 homogenize(const vec4 v) {
             vec4 ret;
             float rhw = 1.0f / v.w;
             ret.x = (v.x * rhw + 1.0f) * w * 0.5f;
