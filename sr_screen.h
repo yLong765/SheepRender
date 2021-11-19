@@ -6,6 +6,9 @@
 #define SHEEPRENDER_SR_SCREEN_H
 
 namespace SR {
+#define VK_MOUSEWHEELUP 500
+#define VK_MOUSEWHEELDOWN 501
+
     static int keys[512];
     static int screen_exit;
 
@@ -71,6 +74,9 @@ namespace SR {
             case WM_RBUTTONUP:
                 keys[VK_RBUTTON & 511] = 0;
                 break;
+            case WM_MOUSEWHEEL:
+                keys[VK_MOUSEWHEELUP & 511] = HIWORD(wParam) == WHEEL_DELTA;
+                keys[VK_MOUSEWHEELDOWN & 511] = HIWORD(wParam) != WHEEL_DELTA;
             default:
                 return DefWindowProc(hWnd, msg, wParam, lParam);
         }

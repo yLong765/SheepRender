@@ -16,6 +16,8 @@ int main() {
     bool first = true;
 
     while (screen_exit == 0) {
+        keys[VK_MOUSEWHEELUP & 511] = 0;
+        keys[VK_MOUSEWHEELDOWN & 511] = 0;
         screen.dispatch();
 
         if (keys[VK_LBUTTON]) {
@@ -32,11 +34,18 @@ int main() {
             mouse_change = vec2(0, 0);
         }
 
-        render.clear_color(color(0.0f, 0.0f, 0.0f));
+        if (keys[VK_MOUSEWHEELUP]) {
+            camera.from.z += 0.1f;
+        }
+
+        if (keys[VK_MOUSEWHEELDOWN]) {
+            camera.from.z -= 0.1f;
+        }
 
         obj.transform.euler.x -= mouse_change.y * 0.1f;
         obj.transform.euler.y += mouse_change.x * 0.1f;
 
+        render.clear_color(color(0.0f, 0.0f, 0.0f));
         render.draw_wireframe(obj);
 
         screen.set_buffer(&texture);
