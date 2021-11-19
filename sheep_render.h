@@ -37,14 +37,11 @@
 #include "sr_camera.h"
 #include "sr_mesh.h"
 
-
 #include "sr_obj_loader.h"
 
 #include "sr_object.h"
 
-
 #include "sr_object_mgr.h"
-
 
 #include "sr_render.h"
 

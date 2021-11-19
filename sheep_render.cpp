@@ -7,7 +7,7 @@ int width = 800, height = 600;
 int main() {
     screen screen = create_screen(width, height, "sheep render");
     camera camera(vec3(0, 0, -3.5f), vec3::zero(), vec3::up(), width, height);
-    object obj("../model/cube2.obj");
+    object obj("../model/cube.obj");
     texture_2d texture(width, height);
     render render(&texture, &camera);
 
