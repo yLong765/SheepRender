@@ -7,7 +7,7 @@ int width = 800, height = 600;
 int main() {
     screen screen = create_screen(width, height, "sheep render");
     camera camera(vec3(0, 0, -3.5f), vec3::zero(), vec3::up(), width, height);
-    object model("../model/cube.obj");
+    object model("../model/shape.obj");
     texture_2d texture(width, height);
     render render(&texture);
 
@@ -26,19 +26,13 @@ int main() {
         mat4x4 projection = camera.get_perspective_matrix();
         mat4x4 trans = world * view * projection;
         for (int i = 0; i < model.mesh.triangles.size(); i += 3) {
-            int id1 = model.mesh.triangles[i];
-            int id2 = model.mesh.triangles[i + 1];
-            int id3 = model.mesh.triangles[i + 2];
-            vec4 p1 = vec4(model.mesh.vertices[id1], 1);
-            vec4 p2 = vec4(model.mesh.vertices[id2], 1);
-            vec4 p3 = vec4(model.mesh.vertices[id3], 1);
-            p1 = p1 * trans;
-            p2 = p2 * trans;
-            p3 = p3 * trans;
-            p1 = camera.homogenize(p1);
-            p2 = camera.homogenize(p2);
-            p3 = camera.homogenize(p3);
-            render.draw_triangle_wireframe(p1, p2, p3, color(1.0f, 0.0f, 0.0f));
+            vec4 screen_point[3];
+            for (int j = 0; j < 3; j++) {
+                int id = model.mesh.triangles[i + j];
+                screen_point[j] = vec4(model.mesh.vertices[id], 1) * trans;
+                screen_point[j] = camera.homogenize(screen_point[j]);
+            }
+            render.draw_triangle_wireframe(screen_point[0], screen_point[1], screen_point[2], color(1.0f, 1.0f, 1.0f));
         }
 
         screen.set_buffer(&texture);

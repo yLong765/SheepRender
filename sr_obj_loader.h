@@ -17,7 +17,13 @@ namespace SR {
             std::vector<vec3> d_v;
             std::vector<vec2> d_vt;
             std::vector<vec3> d_vn;
-            std::vector<vec3> d_f;
+            int d_f_count = 0;
+
+            std::vector<vec3> vertices;
+            std::vector<vec2> uv;
+            std::vector<vec3> normals;
+            std::vector<int> triangles;
+
             while (!in.eof()) {
                 getline(in, line);
                 std::istringstream iss(line.c_str());
@@ -38,23 +44,36 @@ namespace SR {
                     for (int i = 0; i < 3; i++) iss >> n[i];
                     d_vn.push_back(n);
                 } else if (!line.compare(0, 2, "f ")) {
+                    std::vector<vec3> d_f;
                     vec3 tmp;
                     iss >> trash;
                     while (iss >> tmp[0] >> trash >> tmp[1] >> trash >> tmp[2]) {
                         for (int i = 0; i < 3; i++) tmp[i]--; // in wavefront obj all indices start at 1, not zero
                         d_f.push_back(tmp);
                     }
+                    if (d_f.size() == 3) {
+                        for (int i = 0; i < 3; i++) {
+                            vertices.push_back(d_v[d_f[i][0]]);
+                            uv.push_back(d_vt[d_f[i][1]]);
+                            normals.push_back(d_vn[d_f[i][2]]);
+                            triangles.push_back(d_f_count);
+                            d_f_count++;
+                        }
+                    } else {
+                        triangles.push_back(d_f_count);
+                        triangles.push_back(d_f_count + 1);
+                        triangles.push_back(d_f_count + 2);
+                        triangles.push_back(d_f_count + 2);
+                        triangles.push_back(d_f_count + 3);
+                        triangles.push_back(d_f_count);
+                        for (int i = 0; i < 4; i++) {
+                            vertices.push_back(d_v[d_f[i][0]]);
+                            uv.push_back(d_vt[d_f[i][1]]);
+                            normals.push_back(d_vn[d_f[i][2]]);
+                            d_f_count++;
+                        }
+                    }
                 }
-            }
-            std::vector<vec3> vertices;
-            std::vector<vec2> uv;
-            std::vector<vec3> normals;
-            std::vector<int> triangles;
-            for (int i = 0; i < d_f.size(); i++) {
-                vertices.push_back(d_v[d_f[i][0]]);
-                uv.push_back(d_vt[d_f[i][1]]);
-                normals.push_back(d_vn[d_f[i][2]]);
-                triangles.push_back(i);
             }
             sr_mesh mesh;
             mesh.vertices = vertices;
