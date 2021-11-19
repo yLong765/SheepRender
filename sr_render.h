@@ -11,12 +11,14 @@ namespace SR {
         int height;
         sr_texture_2d *texture;
         float *z_buffer;
+        sr_camera *camera;
 
-        sr_render(sr_texture_2d *texture) {
+        sr_render(sr_texture_2d *texture, sr_camera *camera) {
             this->width = texture->width;
             this->height = texture->height;
             this->texture = texture;
             this->z_buffer = (float *) malloc(sizeof(float) * width * height);
+            this->camera = camera;
         }
 
         void set_color(int index, color color) const {
@@ -83,6 +85,40 @@ namespace SR {
             draw_line((int) v1.x, (int) v1.y, (int) v2.x, (int) v2.y, color);
             draw_line((int) v2.x, (int) v2.y, (int) v3.x, (int) v3.y, color);
             draw_line((int) v3.x, (int) v3.y, (int) v1.x, (int) v1.y, color);
+        }
+
+        void draw_wireframe(sr_object obj) const {
+            mat4x4 world = obj.transform.get_world_matrix();
+            mat4x4 view = camera->get_look_at_matrix();
+            mat4x4 projection = camera->get_perspective_matrix();
+            mat4x4 trans = world * view * projection;
+            for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
+                vec4 screen_point[3];
+                for (int j = 0; j < 3; j++) {
+                    int id = obj.mesh.triangles[i + j];
+                    screen_point[j] = vec4(obj.mesh.vertices[id], 1) * trans;
+                    screen_point[j] = camera->homogenize(screen_point[j]);
+                }
+                draw_triangle_wireframe(screen_point[0], screen_point[1], screen_point[2], color(1.0f, 1.0f, 1.0f));
+            }
+        }
+
+        void draw_wireframe(std::vector<sr_object> objs) const {
+            for (sr_object obj : objs) {
+                mat4x4 world = obj.transform.get_world_matrix();
+                mat4x4 view = camera->get_look_at_matrix();
+                mat4x4 projection = camera->get_perspective_matrix();
+                mat4x4 trans = world * view * projection;
+                for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
+                    vec4 screen_point[3];
+                    for (int j = 0; j < 3; j++) {
+                        int id = obj.mesh.triangles[i + j];
+                        screen_point[j] = vec4(obj.mesh.vertices[id], 1) * trans;
+                        screen_point[j] = camera->homogenize(screen_point[j]);
+                    }
+                    draw_triangle_wireframe(screen_point[0], screen_point[1], screen_point[2], color(1.0f, 1.0f, 1.0f));
+                }
+            }
         }
     } render;
 }

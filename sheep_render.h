@@ -29,16 +29,24 @@
 #include "sr_texture_2d.h"
 #include "sr_screen.h"
 
-// component
+// shdaer
+#include "shader/sr_shader.h"
+#include "shader/sr_phong_shader.h"
+
 #include "sr_transform.h"
-#include "shader/sr_shader_inc.h"
-#include "sr_mesh.h"
 #include "sr_camera.h"
-#include "sr_render.h"
+#include "sr_mesh.h"
+
 
 #include "sr_obj_loader.h"
 
 #include "sr_object.h"
+
+
+#include "sr_object_mgr.h"
+
+
+#include "sr_render.h"
 
 
 #endif //SHEEPRENDER_SHEEP_RENDER_H

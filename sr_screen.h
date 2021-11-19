@@ -35,6 +35,13 @@ namespace SR {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
+
+        vec2 get_mouse_point() const {
+            POINT point;
+            GetCursorPos(&point);
+            ScreenToClient(handle, &point);
+            return vec2{(float) point.x, (float) point.y};
+        }
     } screen;
 
     static LRESULT CALLBACK event_screen(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -52,12 +59,23 @@ namespace SR {
             case WM_KEYUP:
                 keys[wParam & 511] = 0;
                 break;
+            case WM_LBUTTONDOWN:
+                keys[VK_LBUTTON & 511] = 1;
+                break;
+            case WM_RBUTTONDOWN:
+                keys[VK_RBUTTON & 511] = 1;
+                break;
+            case WM_LBUTTONUP:
+                keys[VK_LBUTTON & 511] = 0;
+                break;
+            case WM_RBUTTONUP:
+                keys[VK_RBUTTON & 511] = 0;
+                break;
             default:
                 return DefWindowProc(hWnd, msg, wParam, lParam);
         }
         return 0;
     }
-
 
     sr_screen create_screen(int width, int height, const char *title) {
         WNDCLASS wc;

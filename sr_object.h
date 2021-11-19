@@ -13,6 +13,10 @@ namespace SR {
         sr_object(const char *path) {
             mesh = obj_loader::load(path);
         }
+
+        void render(sr_camera camera) {
+
+        }
     } object;
 }
 

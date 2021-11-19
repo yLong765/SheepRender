@@ -9,8 +9,8 @@ namespace SR {
     typedef struct sr_phong_shader : public sr_shader {
         sr_phong_shader() = default;
 
-        vec4 vert() override {
-            return {0, 0, 0, 1};
+        vec4 vert(vec4 vertex) override {
+            return vertex;
         }
 
         bool frag() override {
