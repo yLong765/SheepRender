@@ -14,6 +14,8 @@
 #include <cmath>
 #include <map>
 #include <vector>
+#include <limits>
+#include <float.h>
 #include <windows.h>
 
 #include "sr_macro.h"
@@ -21,6 +23,7 @@
 // math
 #include "sr_vector.h"
 #include "sr_matrix.h"
+#include "sr_math.h"
 
 // vertex data
 #include "sr_color.h"

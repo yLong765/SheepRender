@@ -23,6 +23,14 @@ namespace SR {
             assert(i >= 0 && i < colors.size());
             return colors[i];
         }
+
+        void set(int i, sr_color color) {
+            colors[i] = color;
+        }
+
+        void set(int x, int y, sr_color color) {
+            colors[x + y * width] = color;
+        }
     } texture_2d;
 }
 

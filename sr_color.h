@@ -34,6 +34,13 @@ namespace SR {
             A = clamp(A, 0, 255);
             return (A << 24) | (R << 16) | (G << 8) | (B);
         }
+
+        void set(float r, float g, float b, float a = 1) {
+            this->r = r;
+            this->g = g;
+            this->b = b;
+            this->a = a;
+        }
     } color;
 }
 

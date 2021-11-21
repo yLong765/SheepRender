@@ -19,9 +19,9 @@ namespace SR {
 
         sr_shader() = default;
 
-        virtual vec4 vert(vec4 vertex) = 0;
+        virtual vec4 vert(vec4 vertex, vec4 normal) = 0;
 
-        virtual bool frag() = 0;
+        virtual bool frag(sr_color &color) = 0;
     } shader;
 }
 
