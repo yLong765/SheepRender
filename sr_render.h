@@ -99,9 +99,11 @@ namespace SR {
         }
 
         void draw(sr_object obj) const {
-            obj.mesh.shader->world = obj.transform.get_world_matrix();
-            obj.mesh.shader->view = camera->get_look_at_matrix();
-            obj.mesh.shader->projection = camera->get_perspective_matrix();
+            shader *shader = obj.mesh.shader;
+            shader->mat_model = obj.transform.get_world_matrix();
+            shader->mat_view = camera->get_look_at_matrix();
+            shader->mat_proj = camera->get_perspective_matrix();
+            shader->mat_mvp = shader->mat_model * shader->mat_view * shader->mat_proj;
             for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
                 vec4f clip_p[3];
                 vec2f screen_p[3];
@@ -135,52 +137,6 @@ namespace SR {
                 }
             }
         }
-
-//        void draw_base(sr_object obj) const {
-//            obj.mesh.shader->world = obj.transform.get_world_matrix();
-//            obj.mesh.shader->view = camera->get_look_at_matrix();
-//            obj.mesh.shader->projection = camera->get_perspective_matrix();
-//            for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
-//                vec4f clip_point[3];
-//                vec4f screen_point[3];
-//                vec2f screen_point2[3];
-//                for (int j = 0; j < 3; j++) {
-//                    int id = obj.mesh.triangles[i + j];
-//                    clip_point[j] = obj.mesh.shader->vert(vec4f(obj.mesh.vertices[id], 1));
-//                    screen_point[j] = camera->homogenize(clip_point[j]);
-//                    screen_point2[j] = vec2f(screen_point[j].x / screen_point[j].w,
-//                                            screen_point[j].y / screen_point[j].w);
-//                }
-//                vec2f boxmin(FLT_MAX, FLT_MAX);
-//                vec2f boxmax(-FLT_MAX, -FLT_MAX);
-//                float heightf = (float) texture->height - 1.0f;
-//                for (int k = 0; k < 3; k++) {
-//                    for (int j = 0; j < 2; j++) {
-//                        boxmin[j] = std::max(0.0f, std::min(boxmin[j], screen_point2[i][j]));
-//                        boxmax[j] = std::min(heightf, std::max(boxmax[j], screen_point2[i][j]));
-//                    }
-//
-//                    for (int x = (int) boxmin.x; x <= boxmax.x; x++) {
-//                        for (int y = (int) boxmin.y; y <= boxmax.y; y++) {
-//                            vec3f bc_screen = math::barycentric(screen_point2[0], screen_point2[1], screen_point2[2],
-//                                                               vec2f(x, y));
-//                            vec3f bc_clip = vec3f(bc_screen.x / screen_point[0].w, bc_screen.y / screen_point[1].w,
-//                                                bc_screen.z / screen_point[2].w);
-//                            bc_clip = bc_clip / (bc_clip.x + bc_clip.y + bc_clip.z);
-//                            float z_depth = vec3f(clip_point[0].z, clip_point[1].z, clip_point[2].z) * bc_clip;
-//                            if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0 ||
-//                                z_buffer[x + y * texture->width] > z_depth)
-//                                continue;
-//                            color color;
-//                            bool discard = obj.mesh.shader->frag(bc_clip, color);
-//                            if (discard) continue;
-//                            z_buffer[x + y * texture->width] = z_depth;
-//                            texture->set(x, y, color);
-//                        }
-//                    }
-//                }
-//            }
-//        }
     } render;
 }
 

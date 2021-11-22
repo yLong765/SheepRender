@@ -43,6 +43,20 @@ namespace SR {
             c.g = g;
             c.a = a;
         }
+
+        void set(vec3f v, float a = 1) {
+            c.r = v.r;
+            c.b = v.b;
+            c.g = v.g;
+            c.a = a;
+        }
+
+        void set(vec4f v) {
+            c.r = v.r;
+            c.b = v.b;
+            c.g = v.g;
+            c.a = v.a;
+        }
     } color;
 }
 

@@ -12,10 +12,10 @@ namespace SR {
     };
 
     typedef struct sr_shader {
-        mat4x4f world;
-        mat4x4f view;
-        mat4x4f projection;
-        mat4x4f trans;
+        mat4x4f mat_model;
+        mat4x4f mat_view;
+        mat4x4f mat_proj;
+        mat4x4f mat_mvp;
 
         sr_shader() = default;
 

@@ -7,7 +7,7 @@ int width = 800, height = 600;
 int main() {
     screen screen = create_screen(width, height, "sheep render");
     camera camera(vec3f(0, 0, -3.5f), vec3f::zero(), vec3f::up(), width, height);
-    object obj("../model/plane.obj");
+    object obj("../model/cube.obj");
     texture_2d texture(width, height);
     render render(&texture, &camera);
 
@@ -47,7 +47,7 @@ int main() {
 
         render.clear_color(color(0.0f, 0.0f, 0.0f));
         render.draw(obj);
-        render.draw_wireframe(obj, color(1.0f, 0.0f, 0.0f));
+        //render.draw_wireframe(obj, color(1.0f, 0.0f, 0.0f));
 
         screen.set_buffer(&texture);
         screen.update_hdc();
