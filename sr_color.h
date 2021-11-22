@@ -7,39 +7,41 @@
 
 namespace SR {
     typedef struct sr_color {
-        float r, g, b, a;
+        sr_vector<4, float> c{};
 
         sr_color() = default;
 
-        sr_color(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a) {}
-
-        float &operator[](const int i) {
-            assert(i >= 0 && i < 4);
-            return i == 0 ? r : i == 1 ? g : i == 2 ? b : a;
+        sr_color(float r, float g, float b, float a = 1.0f) {
+            c.r = r;
+            c.g = g;
+            c.b = b;
+            c.a = a;
         }
 
-        float operator[](const int i) const {
-            assert(i >= 0 && i < 4);
-            return i == 0 ? r : i == 1 ? g : i == 2 ? b : a;
+        float &operator[](const size_t i) {
+            assert(i < 4);
+            return c[i];
+        }
+
+        float operator[](const size_t i) const {
+            assert(i < 4);
+            return c[i];
         }
 
         UINT get_pixel_color() const {
-            UCHAR R = (UCHAR) (r * 255.0f);
-            UCHAR G = (UCHAR) (g * 255.0f);
-            UCHAR B = (UCHAR) (b * 255.0f);
-            UCHAR A = (UCHAR) (a * 255.0f);
-            R = clamp(R, 0, 255);
-            G = clamp(G, 0, 255);
-            B = clamp(B, 0, 255);
-            A = clamp(A, 0, 255);
-            return (A << 24) | (R << 16) | (G << 8) | (B);
+            sr_vector<4, UCHAR> oc{};
+            for (size_t i = 0; i < 4; i++) {
+                oc[i] = c[i] * 255.0f;
+                oc[i] = clamp(oc[i], 0, 255);
+            }
+            return (oc.a << 24) | (oc.r << 16) | (oc.g << 8) | (oc.b);
         }
 
         void set(float r, float g, float b, float a = 1) {
-            this->r = r;
-            this->g = g;
-            this->b = b;
-            this->a = a;
+            c.r = r;
+            c.b = b;
+            c.g = g;
+            c.a = a;
         }
     } color;
 }
