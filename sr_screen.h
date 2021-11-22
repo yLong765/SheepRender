@@ -39,11 +39,11 @@ namespace SR {
             DispatchMessage(&msg);
         }
 
-        vec2 get_mouse_point() const {
+        vec2f get_mouse_point() const {
             POINT point;
             GetCursorPos(&point);
             ScreenToClient(handle, &point);
-            return vec2{(float) point.x, (float) point.y};
+            return vec2f{(float) point.x, (float) point.y};
         }
     } screen;
 

@@ -7,20 +7,20 @@
 
 namespace SR {
     typedef struct sr_transform {
-        vec3 position{};
-        vec3 euler{};
-        vec3 scale{};
+        vec3f position{};
+        vec3f euler{};
+        vec3f scale{};
 
-        mat4x4 world;
+        mat4x4f world;
 
         bool is_static;
         bool is_init;
 
         sr_transform(bool is_state = false) : is_static(is_static) {
-            position = vec3::zero();
-            euler = vec3::zero();
-            scale = vec3::one();
-            world = mat4x4::identity();
+            position = vec3f::zero();
+            euler = vec3f::zero();
+            scale = vec3f::one();
+            world = mat4x4f::identity();
             is_init = false;
         }
 
@@ -29,11 +29,11 @@ namespace SR {
             this->is_init = false;
         }
 
-        mat4x4 get_world_matrix() {
+        mat4x4f get_world_matrix() {
             if (!is_static || !is_init) {
-                mat4x4 scale_mat = mat4x4::get_scale(scale);
-                mat4x4 rotation_mat = mat4x4::get_rotation(deg2rad(euler.x), deg2rad(euler.y), deg2rad(euler.z));
-                mat4x4 translation_mat = mat4x4::get_translation(position);
+                mat4x4f scale_mat = mat4x4f::get_scale(scale);
+                mat4x4f rotation_mat = mat4x4f::get_rotation(deg2rad(euler.x), deg2rad(euler.y), deg2rad(euler.z));
+                mat4x4f translation_mat = mat4x4f::get_translation(position);
                 world = scale_mat * rotation_mat * translation_mat;
                 is_init = true;
             }

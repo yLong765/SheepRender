@@ -6,102 +6,102 @@
 #define SHEEPRENDER_SR_MATRIX_H
 
 namespace SR {
-    template<int row, int col>
+    template<size_t ROW, size_t COL, typename T>
     struct matrix {
-        sr_vector <col> m[row] = {{}};
+        sr_vector <COL, T> m[ROW] = {{}};
 
-        matrix() = default;
+        inline matrix() = default;
 
-        sr_vector <col> &operator[](const int i) {
-            assert(i >= 0 && i < row);
+        inline sr_vector <COL, T> &operator[](const size_t i) {
+            assert(i < ROW);
             return m[i];
         }
 
-        const sr_vector <col> &operator[](const int i) const {
-            assert(i >= 0 && i < row);
+        inline const sr_vector <COL, T> &operator[](const size_t i) const {
+            assert(i < ROW);
             return m[i];
         }
 
-        void set_row(int i, const sr_vector <col> &v) {
-            assert(i >= 0 && i < col);
+        inline void set_row(size_t i, const sr_vector <COL, T> &v) {
+            assert(i < COL);
             m[i] = v;
         }
 
-        void set_col(int i, const sr_vector <row> &v) {
-            assert(i >= 0 && i < row);
-            for (int j = 0; j < row; j++) {
+        inline void set_col(size_t i, const sr_vector <ROW, T> &v) {
+            assert(i < ROW);
+            for (size_t j = 0; j < ROW; j++) {
                 m[j][i] = v[j];
             }
         }
 
-        sr_vector <col> get_row(int i) const {
-            assert(i >= 0 && i < col);
+        inline sr_vector <COL, T> row(size_t i) const {
+            assert(i < COL);
             return m[i];
         }
 
-        sr_vector <row> get_col(int i) const {
-            sr_vector<row> ret;
-            for (int j = 0; j < row; j++) {
+        inline sr_vector <ROW, T> col(size_t i) const {
+            sr_vector<ROW, T> ret;
+            for (size_t j = 0; j < ROW; j++) {
                 ret[j] = (*this)[j][i];
             }
             return ret;
         }
 
-        matrix<row, col> inverse() const {
+        inline matrix<ROW, COL, T> inverse() const {
 
         }
 
-        matrix<col, row> transpose() const {
-            matrix<col, row> ret;
-            for (int i = 0; i < row; i++)
-                for (int j = 0; j < col; j++)
+        inline matrix<COL, ROW, T> transpose() const {
+            matrix<COL, ROW, T> ret;
+            for (size_t i = 0; i < ROW; i++)
+                for (size_t j = 0; j < COL; j++)
                     ret[j][i] = (*this)[i][j];
             return ret;
         }
 
-        static matrix<row, col> identity() {
-            matrix<row, col> ret;
-            for (int i = 0; i < row; i++) {
-                for (int j = 0; j < col; j++) {
+        static matrix<ROW, COL, T> identity() {
+            matrix<ROW, COL, T> ret;
+            for (size_t i = 0; i < ROW; i++) {
+                for (size_t j = 0; j < COL; j++) {
                     ret[i][j] = i == j;
                 }
             }
             return ret;
         }
 
-        static matrix<row, col> zero() {
-            matrix<row, col> ret;
-            for (int i = 0; i < row; i++) {
-                for (int j = 0; j < col; j++) {
+        static matrix<ROW, COL, T> zero() {
+            matrix<ROW, COL, T> ret;
+            for (size_t i = 0; i < ROW; i++) {
+                for (size_t j = 0; j < COL; j++) {
                     ret[i][j] = 0;
                 }
             }
             return ret;
         }
 
-        static matrix<row, col> get_translation(vec3 val) {
-            assert(row == 4 && col == 4);
-            matrix<4, 4> ret = identity();
+        static matrix<ROW, COL, T> get_translation(vec3f val) {
+            assert(ROW == 4 && COL == 4);
+            matrix<4, 4, T> ret = identity();
             ret[3][0] = val[0];
             ret[3][1] = val[1];
             ret[3][2] = val[2];
             return ret;
         }
 
-        static matrix<row, col> get_scale(vec3 val) {
-            assert(row == 4 && col == 4);
-            matrix<4, 4> ret = identity();
+        static matrix<ROW, COL, T> get_scale(vec3f val) {
+            assert(ROW == 4 && COL == 4);
+            matrix<4, 4, T> ret = identity();
             ret[0][0] = val[0];
             ret[1][1] = val[1];
             ret[2][2] = val[2];
             return ret;
         }
 
-        static matrix<row, col> get_x_rotation(float angle) {
-            assert(row == 4 && col == 4);
+        static matrix<ROW, COL, T> get_x_rotation(float angle) {
+            assert(ROW == 4 && COL == 4);
             float c = std::cos(angle);
             float s = std::sin(angle);
-            matrix<4, 4> ret = identity();
+            matrix<4, 4, T> ret = identity();
             ret[1][1] = c;
             ret[1][2] = -s;
             ret[2][1] = s;
@@ -109,11 +109,11 @@ namespace SR {
             return ret;
         }
 
-        static matrix<row, col> get_y_rotation(float angle) {
-            assert(row == 4 && col == 4);
+        static matrix<ROW, COL, T> get_y_rotation(float angle) {
+            assert(ROW == 4 && COL == 4);
             float c = std::cos(angle);
             float s = std::sin(angle);
-            matrix<4, 4> ret = identity();
+            matrix<4, 4, T> ret = identity();
             ret[0][0] = c;
             ret[0][2] = s;
             ret[2][0] = -s;
@@ -121,11 +121,11 @@ namespace SR {
             return ret;
         }
 
-        static matrix<row, col> get_z_rotation(float angle) {
-            assert(row == 4 && col == 4);
+        static matrix<ROW, COL, T> get_z_rotation(float angle) {
+            assert(ROW == 4 && COL == 4);
             float c = std::cos(angle);
             float s = std::sin(angle);
-            matrix<4, 4> ret = identity();
+            matrix<4, 4, T> ret = identity();
             ret[0][0] = c;
             ret[0][1] = -s;
             ret[1][0] = s;
@@ -133,9 +133,9 @@ namespace SR {
             return ret;
         }
 
-        static matrix<row, col> get_rotation(float x, float y, float z) {
-            assert(row == 4 && col == 4);
-            matrix<4, 4> ret = identity();
+        static matrix<ROW, COL, T> get_rotation(float x, float y, float z) {
+            assert(ROW == 4 && COL == 4);
+            matrix<4, 4, T> ret = identity();
             ret = ret * get_z_rotation(z);
             ret = ret * get_y_rotation(y);
             ret = ret * get_x_rotation(x);
@@ -143,72 +143,80 @@ namespace SR {
         }
     };
 
-    template<int row, int col>
-    std::ostream &operator<<(std::ostream &out, const matrix<row, col> &m) {
-        for (int i = 0; i < row; i++) {
-            for (int j = 0; j < col - 1; j++) {
+    template<size_t ROW, size_t COL, typename T>
+    inline std::ostream &operator<<(std::ostream &out, const matrix<ROW, COL, T> &m) {
+        for (size_t i = 0; i < ROW; i++) {
+            for (size_t j = 0; j < COL - 1; j++) {
                 out << m[i][j] << " ";
             }
-            out << m[i][col - 1] << "\n";
+            out << m[i][COL - 1] << "\n";
         }
         return out;
     }
 
-    template<int row, int col>
-    matrix<row, col> operator+(const matrix<row, col> &lm, const matrix<row, col> &rm) {
-        matrix<row, col> ret;
-        for (int i = 0; i < row; i++)
-            for (int j = 0; j < col; j++)
+    template<size_t ROW, size_t COL, typename T>
+    inline matrix<ROW, COL, T> operator+(const matrix<ROW, COL, T> &lm, const matrix<ROW, COL, T> &rm) {
+        matrix<ROW, COL, T> ret;
+        for (size_t i = 0; i < ROW; i++)
+            for (size_t j = 0; j < COL; j++)
                 ret[i][j] = lm[i][j] + rm[i][j];
         return ret;
     }
 
-    template<int row, int col>
-    matrix<row, col> operator-(const matrix<row, col> &lm, const matrix<row, col> &rm) {
-        matrix<row, col> ret;
-        for (int i = 0; i < row; i++)
-            for (int j = 0; j < col; j++)
+    template<size_t ROW, size_t COL, typename T>
+    inline matrix<ROW, COL, T> operator-(const matrix<ROW, COL, T> &lm, const matrix<ROW, COL, T> &rm) {
+        matrix<ROW, COL, T> ret;
+        for (size_t i = 0; i < ROW; i++)
+            for (size_t j = 0; j < COL; j++)
                 ret[i][j] = lm[i][j] - rm[i][j];
         return ret;
     }
 
-    template<int row, int col>
-    matrix<row, col> operator*(const matrix<row, col> &m, const float &val) {
-        matrix<row, col> ret;
-        for (int i = 0; i < row; i++)
-            for (int j = 0; j < col; j++)
+    template<size_t ROW, size_t COL, typename T>
+    inline matrix<ROW, COL, T> operator*(const matrix<ROW, COL, T> &m, const float &val) {
+        matrix<ROW, COL, T> ret;
+        for (size_t i = 0; i < ROW; i++)
+            for (size_t j = 0; j < COL; j++)
                 ret[i][j] = m[i][j] * val;
         return ret;
     }
 
-    template<int r1, int c1, int c2>
-    matrix<r1, c2> operator*(const matrix<r1, c1> &lm, const matrix<c1, c2> &rm) {
-        matrix<r1, c2> ret;
-        for (int i = 0; i < r1; i++)
-            for (int j = 0; j < c2; j++)
-                ret[i][j] = lm[i] * rm.get_col(j);
+    template<size_t ROW1, size_t COL1, size_t COL2, typename T>
+    inline matrix<ROW1, COL2, T> operator*(const matrix<ROW1, COL1, T> &lm, const matrix<COL1, COL2, T> &rm) {
+        matrix<ROW1, COL2, T> ret;
+        for (size_t i = 0; i < ROW1; i++)
+            for (size_t j = 0; j < COL2; j++)
+                ret[i][j] = vec_dot(lm[i], rm.col(j));
         return ret;
     }
 
-    template<int c1, int c2>
-    sr_vector <c2> operator*(const sr_vector <c2> &lv, const matrix<c1, c2> &rm) {
-        sr_vector<c2> ret;
-        for (int j = 0; j < c2; j++) { ret[j] = lv * rm.get_col(j); }
+    template<size_t ROW, size_t COL, typename T>
+    inline sr_vector <COL, T> operator*(const sr_vector <ROW, T> &lv, const matrix<ROW, COL, T> &rm) {
+        sr_vector<COL, T> ret;
+        for (size_t j = 0; j < COL; j++) ret[j] = vec_dot(lv, rm.col(j));
         return ret;
     }
 
-    template<int row, int col>
-    matrix<row, col> operator/(const matrix<row, col> &m, const float &val) {
-        matrix<row, col> ret;
-        for (int i = 0; i < row; i++)
-            for (int j = 0; j < col; j++)
-                ret[i][j] = m[i][j] / val;
+    template<size_t ROW, size_t COL, typename T>
+    inline sr_vector <ROW, T> operator*(const matrix<ROW, COL, T> &lm, const sr_vector <COL, T> &rv) {
+        sr_vector<ROW, T> ret;
+        for (size_t j = 0; j < ROW; j++) ret[j] = vec_dot(lm[j] * rv);
         return ret;
     }
 
-    typedef matrix<2, 2> mat2x2;
-    typedef matrix<3, 3> mat3x3;
-    typedef matrix<4, 4> mat4x4;
+    template<size_t ROW, size_t COL, typename T>
+    matrix<ROW, COL, T> operator/(const matrix<ROW, COL, T> &m, const float &x) {
+        matrix<ROW, COL, T> ret;
+        for (size_t i = 0; i < ROW; i++)
+            for (size_t j = 0; j < COL; j++)
+                ret[i][j] = m[i][j] / x;
+        return ret;
+    }
+
+    typedef matrix<3, 3, float> mat3x3f;
+    typedef matrix<4, 3, float> mat4x3f;
+    typedef matrix<3, 4, float> mat3x4f;
+    typedef matrix<4, 4, float> mat4x4f;
 }
 
 

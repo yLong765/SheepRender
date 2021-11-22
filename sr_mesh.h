@@ -7,9 +7,9 @@
 
 namespace SR {
     typedef struct sr_mesh {
-        std::vector<vec3> vertices;
-        std::vector<vec3> normals;
-        std::vector<vec2> uv;
+        std::vector<vec3f> vertices;
+        std::vector<vec3f> normals;
+        std::vector<vec2f> uv;
         std::vector<int> triangles;
         sr_shader *shader;
 

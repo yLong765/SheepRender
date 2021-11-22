@@ -14,14 +14,14 @@ namespace SR {
                 std::cerr << "Error: " << strerror(errno);
             }
             std::string line;
-            std::vector<vec3> d_v;
-            std::vector<vec2> d_vt;
-            std::vector<vec3> d_vn;
+            std::vector<vec3f> d_v;
+            std::vector<vec2f> d_vt;
+            std::vector<vec3f> d_vn;
             int d_f_count = 0;
 
-            std::vector<vec3> vertices;
-            std::vector<vec2> uv;
-            std::vector<vec3> normals;
+            std::vector<vec3f> vertices;
+            std::vector<vec2f> uv;
+            std::vector<vec3f> normals;
             std::vector<int> triangles;
 
             while (!in.eof()) {
@@ -30,22 +30,22 @@ namespace SR {
                 char trash;
                 if (!line.compare(0, 2, "v ")) {
                     iss >> trash;
-                    vec3 v;
+                    vec3f v;
                     for (int i = 0; i < 3; i++) iss >> v[i];
                     d_v.push_back(v);
                 } else if (!line.compare(0, 3, "vt ")) {
                     iss >> trash >> trash;
-                    vec2 uv;
+                    vec2f uv;
                     for (int i = 0; i < 2; i++) iss >> uv[i];
                     d_vt.push_back(uv);
                 } else if (!line.compare(0, 3, "vn ")) {
                     iss >> trash >> trash;
-                    vec3 n;
+                    vec3f n;
                     for (int i = 0; i < 3; i++) iss >> n[i];
                     d_vn.push_back(n);
                 } else if (!line.compare(0, 2, "f ")) {
-                    std::vector<vec3> d_f;
-                    vec3 tmp;
+                    std::vector<vec3f> d_f;
+                    vec3f tmp;
                     iss >> trash;
                     while (iss >> tmp[0] >> trash >> tmp[1] >> trash >> tmp[2]) {
                         for (int i = 0; i < 3; i++) tmp[i]--; // in wavefront obj all indices start at 1, not zero

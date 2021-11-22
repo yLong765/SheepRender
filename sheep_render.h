@@ -14,8 +14,7 @@
 #include <cmath>
 #include <map>
 #include <vector>
-#include <limits>
-#include <float.h>
+#include <cfloat>
 #include <windows.h>
 
 #include "sr_macro.h"

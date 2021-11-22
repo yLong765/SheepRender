@@ -6,192 +6,332 @@
 #define SHEEPRENDER_SR_VECTOR_H
 
 namespace SR {
-    template<int n>
+    template<size_t N, typename T>
     struct sr_vector {
-        float data[n] = {0};
+        T data[N];
 
-        sr_vector() = default;
+        inline sr_vector() = default;
 
-        float &operator[](const int i) {
-            assert(i >= 0 && i < n);
+        inline sr_vector(const sr_vector<N, T> &v) { for (size_t i = 0; i < N; ++i) data[i] = v[i]; }
+
+        inline float &operator[](const size_t i) {
+            assert(i < N);
             return data[i];
         }
 
-        float operator[](const int i) const {
-            assert(i >= 0 && i < n);
+        inline float const &operator[](const size_t i) const {
+            assert(i < N);
             return data[i];
         }
     };
 
-    template<int n>
-    sr_vector<n> operator+(const sr_vector<n> &lv, const sr_vector<n> &rv) {
-        sr_vector<n> ret;
-        for (int i = 0; i < n; i++) { ret[i] = lv[i] + rv[i]; }
-        return ret;
-    }
+    template<typename T>
+    struct sr_vector<2, T> {
+        union {
+            struct {
+                T x, y;
+            };
+            struct {
+                T u, v;
+            };
+            T data[2];
+        };
 
-    template<int n>
-    sr_vector<n> operator-(const sr_vector<n> &lv, const sr_vector<n> &rv) {
-        sr_vector<n> ret;
-        for (int i = 0; i < n; i++) { ret[i] = lv[i] - rv[i]; }
-        return ret;
-    }
+        inline sr_vector() = default;
 
-    template<int n>
-    float operator*(const sr_vector<n> &lv, const sr_vector<n> &rv) {
-        float ret = 0;
-        for (int i = 0; i < n; i++) { ret += lv[i] * rv[i]; }
-        return ret;
-    }
+        inline sr_vector(T x, T y) : x(x), y(y) {}
 
-    template<int n>
-    sr_vector<n> operator*(const sr_vector<n> &lv, const float &val) {
-        sr_vector<n> ret{};
-        for (int i = 0; i < n; i++) {
-            ret[i] = lv[i] * val;
+        template<size_t N>
+        inline sr_vector(const sr_vector<N, T> &v) {
+            assert(N > 1);
+            x = v.x;
+            y = v.y;
         }
+
+        inline T &operator[](const size_t i) {
+            assert(i < 2);
+            return data[i];
+        }
+
+        inline const T &operator[](const size_t i) const {
+            assert(i < 2);
+            return data[i];
+        }
+
+        inline sr_vector<2, T> xy() const { return {x, y}; }
+
+        inline sr_vector<3, T> xy1() const { return {x, y, 1}; }
+
+        inline sr_vector<4, T> xy11() const { return {x, y, 1, 1}; }
+    };
+
+    template<typename T>
+    struct sr_vector<3, T> {
+        union {
+            struct {
+                T x, y, z;
+            };
+            struct {
+                T r, g, b;
+            };
+            T data[3];
+        };
+
+        inline sr_vector() = default;
+
+        inline sr_vector(T x, T y, T z) : x(x), y(y), z(z) {}
+
+        template<size_t N>
+        inline sr_vector(const sr_vector<N, T> &v) {
+            assert(N > 2);
+            x = v.x;
+            y = v.y;
+            z = v.z;
+        }
+
+        inline T &operator[](const size_t i) {
+            assert(i < 3);
+            return data[i];
+        }
+
+        inline const T &operator[](const size_t i) const {
+            assert(i < 3);
+            return data[i];
+        }
+
+        inline sr_vector<2, T> xy() const { return {x, y}; }
+
+        inline sr_vector<3, T> xyz() const { return {x, y, z}; }
+
+        inline sr_vector<4, T> xyz1() const { return {x, y, z, 1}; }
+
+        static sr_vector<3, T> right() { return {1, 0, 0}; }
+
+        static sr_vector<3, T> left() { return {-1, 0, 0}; }
+
+        static sr_vector<3, T> up() { return {0, 1, 0}; }
+
+        static sr_vector<3, T> down() { return {0, -1, 0}; }
+
+        static sr_vector<3, T> forward() { return {0, 0, 1}; }
+
+        static sr_vector<3, T> back() { return {0, 0, -1}; }
+
+        static sr_vector<3, T> one() { return {1, 1, 1}; }
+
+        static sr_vector<3, T> zero() { return {0, 0, 0}; }
+    };
+
+    template<typename T>
+    struct sr_vector<4, T> {
+        union {
+            struct {
+                T x, y, z, w;
+            };
+            struct {
+                T r, g, b, a;
+            };
+            T data[4];
+        };
+
+        inline sr_vector() = default;
+
+        inline sr_vector(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
+
+        template<size_t N>
+        inline sr_vector(const sr_vector<N, T> &v) {
+            assert(N > 3);
+            x = v.x;
+            y = v.y;
+            z = v.z;
+            w = v.w;
+        }
+
+        inline T &operator[](const size_t i) {
+            assert(i < 4);
+            return data[i];
+        }
+
+        inline const T &operator[](const size_t i) const {
+            assert(i < 4);
+            return data[i];
+        }
+
+        inline sr_vector<2, T> xy() const { return {x, y}; }
+
+        inline sr_vector<3, T> xyz() const { return {x, y, z}; }
+
+        inline sr_vector<4, T> xyzw() const { return {x, y, z, w}; }
+    };
+
+    //// 重写向量运算符 ////
+
+    // -v
+    template<size_t N, typename T>
+    inline sr_vector<N, T> operator-(const sr_vector<N, T> &v) {
+        sr_vector<N, T> ret;
+        for (size_t i = 0; i < N; i++) ret[i] = -v[i];
         return ret;
     }
 
-    template<int n>
-    sr_vector<n> operator*(const float &num, const sr_vector<n> &rv) {
-        sr_vector<n> ret;
-        for (int i = 0; i < n; i++) { ret[i] = num * rv[i]; }
+    // lv + rv
+    template<size_t N, typename T>
+    inline sr_vector<N, T> operator+(const sr_vector<N, T> &lv, const sr_vector<N, T> &rv) {
+        sr_vector<N, T> ret;
+        for (size_t i = 0; i < N; i++) ret[i] = lv[i] + rv[i];
         return ret;
     }
 
-    template<int n>
-    sr_vector<n> operator/(const sr_vector<n> &lv, const float &val) {
-        sr_vector<n> ret{};
-        for (int i = 0; i < n; i++) { ret[i] = lv[i] / val; }
+    // lv - rv
+    template<size_t N, typename T>
+    inline sr_vector<N, T> operator-(const sr_vector<N, T> &lv, const sr_vector<N, T> &rv) {
+        sr_vector<N, T> ret;
+        for (size_t i = 0; i < N; i++) ret[i] = lv[i] - rv[i];
         return ret;
     }
 
-    template<int n>
-    std::ostream &operator<<(std::ostream &out, const sr_vector<n> &v) {
+    // lv * rv，各个元素分别相乘
+    template<size_t N, typename T>
+    inline sr_vector<N, T> operator*(const sr_vector<N, T> &lv, const sr_vector<N, T> &rv) {
+        sr_vector<N, T> ret;
+        for (size_t i = 0; i < N; i++) ret[i] = lv[i] * rv[i];
+        return ret;
+    }
+
+    // lv / rv，各个元素分别相除
+    template<size_t N, typename T>
+    inline sr_vector<N, T> operator/(const sr_vector<N, T> &lv, const sr_vector<N, T> &rv) {
+        sr_vector<N, T> ret;
+        for (size_t i = 0; i < N; i++) ret[i] = lv[i] / rv[i];
+        return ret;
+    }
+
+    // x * rv
+    template<size_t N, typename T>
+    inline sr_vector<N, T> operator*(const float &x, const sr_vector<N, T> &rv) {
+        sr_vector<N, T> ret;
+        for (size_t i = 0; i < N; i++) ret[i] = x * rv[i];
+        return ret;
+    }
+
+    // lv * x
+    template<size_t N, typename T>
+    inline sr_vector<N, T> operator*(const sr_vector<N, T> &lv, const float &x) {
+        sr_vector<N, T> ret;
+        for (size_t i = 0; i < N; i++) ret[i] = lv[i] * x;
+        return ret;
+    }
+
+    // lv / x
+    template<size_t N, typename T>
+    inline sr_vector<N, T> operator/(const sr_vector<N, T> &lv, const float &x) {
+        sr_vector<N, T> ret;
+        for (size_t i = 0; i < N; i++) ret[i] = lv[i] / x;
+        return ret;
+    }
+
+    // x / rv
+    template<size_t N, typename T>
+    inline sr_vector<N, T> operator/(const float &x, const sr_vector<N, T> &rv) {
+        sr_vector<N, T> ret;
+        for (size_t i = 0; i < N; i++) ret[i] = x / rv[i];
+        return ret;
+    }
+
+    // lv += rv
+    template<size_t N, typename T>
+    inline sr_vector<N, T> &operator+=(sr_vector<N, T> &lv, const sr_vector<N, T> &rv) {
+        for (size_t i = 0; i < N; i++) lv[i] += rv[i];
+        return lv;
+    }
+
+    // lv -= rv
+    template<size_t N, typename T>
+    inline sr_vector<N, T> &operator-=(sr_vector<N, T> &lv, const sr_vector<N, T> &rv) {
+        for (size_t i = 0; i < N; i++) lv[i] -= rv[i];
+        return lv;
+    }
+
+    // lv *= rv
+    template<size_t N, typename T>
+    inline sr_vector<N, T> &operator*=(sr_vector<N, T> &lv, const sr_vector<N, T> &rv) {
+        for (size_t i = 0; i < N; i++) lv[i] *= rv[i];
+        return lv;
+    }
+
+    // lv /= rv
+    template<size_t N, typename T>
+    inline sr_vector<N, T> &operator/=(sr_vector<N, T> &lv, const sr_vector<N, T> &rv) {
+        for (size_t i = 0; i < N; i++) lv[i] /= rv[i];
+        return lv;
+    }
+
+    // lv *= x
+    template<size_t N, typename T>
+    inline sr_vector<N, T> &operator-=(sr_vector<N, T> &lv, const T &x) {
+        for (size_t i = 0; i < N; i++) lv[i] *= x;
+        return lv;
+    }
+
+    // lv /= x
+    template<size_t N, typename T>
+    inline sr_vector<N, T> &operator/=(sr_vector<N, T> &lv, const T &x) {
+        for (size_t i = 0; i < N; i++) lv[i] /= x;
+        return lv;
+    }
+
+    // cout <<
+    template<size_t N, typename T>
+    std::ostream &operator<<(std::ostream &out, const sr_vector<N, T> &v) {
         out << "(";
-        for (int i = 0; i < n - 1; i++) { out << v[i] << ","; }
-        out << v[n - 1] << ")";
+        for (size_t i = 0; i < N - 1; i++) out << v[i] << ",";
+        out << v[N - 1] << ")";
         return out;
     }
 
-    template<>
-    struct sr_vector<2> {
-        float x, y;
+    //// 向量函数 ////
 
-        sr_vector() = default;
+    // 点乘
+    template<size_t N, typename T>
+    inline T vec_dot(const sr_vector<N, T> &lv, const sr_vector<N, T> &rv) {
+        T ret;
+        for (size_t i = 0; i < N; i++) ret += lv[i] * rv[i];
+        return ret;
+    }
 
-        sr_vector(float x, float y) : x(x), y(y) {}
+    // 二维叉乘
+    template<typename T>
+    inline T vec_cross(const sr_vector<2, T> &lv, const sr_vector<2, T> &rv) {
+        return lv.x * rv.y - lv.y * rv.x;
+    }
 
-        float &operator[](const int i) {
-            assert(i >= 0 && i < 2);
-            return i == 0 ? x : y;
-        }
+    // 三维叉乘
+    template<typename T>
+    inline sr_vector<3, T> vec_cross(const sr_vector<3, T> &lv, const sr_vector<3, T> &rv) {
+        return {lv.y * rv.z - lv.z * rv.y, lv.z * rv.x - lv.x * rv.z, lv.x * rv.y - lv.y * rv.x};
+    }
 
-        float operator[](const int i) const {
-            assert(i >= 0 && i < 2);
-            return i == 0 ? x : y;
-        }
 
-        float sqr_magnitude() const { return (*this) * (*this); }
+    template<size_t N, typename T>
+    inline T vec_sqr_magnitude(const sr_vector<N, T> v) {
+        return vec_dot(v, v);
+    }
 
-        float magnitude() const { return std::sqrt(sqr_magnitude()); }
+    template<size_t N, typename T>
+    inline T vec_magnitude(const sr_vector<N, T> v) {
+        return std::sqrt(vec_sqr_magnitude(v));
+    }
 
-        sr_vector normalize() { return *this = (*this) / magnitude(); }
+    template<size_t N, typename T>
+    inline sr_vector<N, T> vec_normalize(const sr_vector<N, T> v) {
+        return v / vec_magnitude(v);
+    }
 
-        static float dot(const sr_vector &lv, const sr_vector &rv) { return lv * rv; }
-    };
-
-    template<>
-    struct sr_vector<3> {
-        float x, y, z;
-
-        sr_vector() = default;
-
-        sr_vector(float x, float y, float z) : x(x), y(y), z(z) {}
-
-        float &operator[](const int i) {
-            assert(i >= 0 && i < 3);
-            return i == 0 ? x : i == 1 ? y : z;
-        }
-
-        float operator[](const int i) const {
-            assert(i >= 0 && i < 3);
-            return i == 0 ? x : i == 1 ? y : z;
-        }
-
-        float sqr_magnitude() const { return (*this) * (*this); }
-
-        float magnitude() const { return std::sqrt(sqr_magnitude()); }
-
-        sr_vector normalize() {
-            float l = magnitude();
-            if (l != 0.0f) {
-                float inv = 1.0f / l;
-                *this = (*this) * inv;
-            }
-            return *this;
-        }
-
-        static float dot(const sr_vector &lv, const sr_vector &rv) { return lv * rv; }
-
-        static sr_vector cross(const sr_vector &lv, const sr_vector &rv) {
-            sr_vector ret{};
-            ret.x = lv.y * rv.z - lv.z * rv.y;
-            ret.y = lv.z * rv.x - lv.x * rv.z;
-            ret.z = lv.x * rv.y - lv.y * rv.x;
-            return ret;
-        }
-
-        static sr_vector right() { return {1, 0, 0}; }
-
-        static sr_vector left() { return {-1, 0, 0}; }
-
-        static sr_vector up() { return {0, 1, 0}; }
-
-        static sr_vector down() { return {0, -1, 0}; }
-
-        static sr_vector forward() { return {0, 0, 1}; }
-
-        static sr_vector back() { return {0, 0, -1}; }
-
-        static sr_vector one() { return {1, 1, 1}; }
-
-        static sr_vector zero() { return {0, 0, 0}; }
-    };
-
-    template<>
-    struct sr_vector<4> {
-        float x, y, z, w;
-
-        sr_vector() = default;
-
-        sr_vector(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
-
-        sr_vector<4>(sr_vector<3> v, float w) : x(v.x), y(v.y), z(v.z), w(w) {}
-
-        float &operator[](const int i) {
-            assert(i >= 0 && i < 4);
-            return i == 0 ? x : i == 1 ? y : i == 2 ? z : w;
-        }
-
-        float operator[](const int i) const {
-            assert(i >= 0 && i < 4);
-            return i == 0 ? x : i == 1 ? y : i == 2 ? z : w;
-        }
-
-        float sqr_magnitude() const { return (*this) * (*this); }
-
-        float magnitude() const { return std::sqrt(sqr_magnitude()); }
-
-        sr_vector normalize() { return *this = (*this) / magnitude(); }
-
-        static float dot(const sr_vector &lv, const sr_vector &rv) { return lv * rv; }
-    };
-
-    typedef sr_vector<2> vec2;
-    typedef sr_vector<3> vec3;
-    typedef sr_vector<4> vec4;
+    typedef sr_vector<2, float> vec2f;
+    typedef sr_vector<3, float> vec3f;
+    typedef sr_vector<4, float> vec4f;
+    typedef sr_vector<2, int> vec2fi;
+    typedef sr_vector<3, int> vec3fi;
 }
 
 #endif //SHEEPRENDER_SR_VECTOR_H
