@@ -8,7 +8,7 @@
 namespace SR {
     typedef struct sr_math {
         // 利用重心坐标判断点是否在三角形内部
-        static vec3f barycentric(const vec2f A, const vec2f B, const vec2f C, const vec2f P) {
+        static vec3f barycentric(const vec2i A, const vec2i B, const vec2i C, const vec2i P) {
             vec3f x(B.x - A.x, C.x - A.x, A.x - P.x);
             vec3f y(B.y - A.y, C.y - A.y, A.y - P.y);
 

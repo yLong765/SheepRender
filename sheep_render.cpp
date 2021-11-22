@@ -47,7 +47,8 @@ int main() {
 
         render.clear_color(color(0.0f, 0.0f, 0.0f));
         render.draw(obj);
-        //render.draw_wireframe(obj, color(1.0f, 0.0f, 0.0f));
+        render.draw_wireframe(obj, color(1.0f, 0.0f, 0.0f));
+        render.draw_normal(obj, color(0.0f, 1.0f, 0.0f));
 
         screen.set_buffer(&texture);
         screen.update_hdc();

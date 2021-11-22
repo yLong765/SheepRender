@@ -77,6 +77,10 @@ namespace SR {
             }
         }
 
+        void draw_line(vec4f v1, vec4f v2, color color) const {
+            draw_line((int) v1.x, (int) v1.y, (int) v2.x, (int) v2.y, color);
+        }
+
         void draw_triangle_wireframe(vec4f v1, vec4f v2, vec4f v3, color color) const {
             draw_line((int) v1.x, (int) v1.y, (int) v2.x, (int) v2.y, color);
             draw_line((int) v2.x, (int) v2.y, (int) v3.x, (int) v3.y, color);
@@ -84,17 +88,33 @@ namespace SR {
         }
 
         void draw_wireframe(sr_object obj, sr_color color) const {
-            mat4x4f world = obj.transform.get_world_matrix();
+            mat4x4f model = obj.transform.get_world_matrix();
             mat4x4f view = camera->get_look_at_matrix();
             mat4x4f projection = camera->get_perspective_matrix();
-            mat4x4f trans = world * view * projection;
+            mat4x4f mvp = model * view * projection;
             for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
                 vec4f screen_point[3];
                 for (int j = 0; j < 3; j++) {
                     int id = obj.mesh.triangles[i + j];
-                    screen_point[j] = camera->homogenize(obj.mesh.vertices[id].xyz1() * trans);
+                    screen_point[j] = camera->homogenize(obj.mesh.vertices[id].xyz1() * mvp);
                 }
                 draw_triangle_wireframe(screen_point[0], screen_point[1], screen_point[2], color);
+            }
+        }
+
+        void draw_normal(sr_object obj, sr_color color) const {
+            mat4x4f model = obj.transform.get_world_matrix();
+            mat4x4f view = camera->get_look_at_matrix();
+            mat4x4f projection = camera->get_perspective_matrix();
+            mat4x4f mvp = model * view * projection;
+            for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
+                for (int j = 0; j < 3; j++) {
+                    int id = obj.mesh.triangles[i + j];
+                    vec4f screen_point = camera->homogenize(obj.mesh.vertices[id].xyz1() * mvp);
+                    vec4f screen_normal = camera->homogenize(
+                            (obj.mesh.vertices[id] + obj.mesh.normals[id]).xyz1() * mvp);
+                    draw_line(screen_point, screen_normal, color);
+                }
             }
         }
 
@@ -105,28 +125,43 @@ namespace SR {
             shader->mat_proj = camera->get_perspective_matrix();
             shader->mat_mvp = shader->mat_model * shader->mat_view * shader->mat_proj;
             for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
-                vec4f clip_p[3];
-                vec2f screen_p[3];
+                vec4f clip_p[3];    // 齐次空间坐标
+                vec2f spf[3];       // 屏幕坐标
+                vec2i spi[3];       // 整数屏幕坐标
 
-                vec2f screen_clamp(width - 1, height - 1);
-                vec2f boxmin(screen_clamp);
-                vec2f boxmax(0, 0);
+                vec2i box_min(width - 1, height - 1);
+                vec2i box_max(0, 0);
 
                 for (int j = 0; j < 3; j++) {
                     int id = obj.mesh.triangles[i + j];
                     clip_p[j] = obj.mesh.shader->vert(obj.mesh.vertices[id].xyz1(), obj.mesh.normals[id].xyz1());
-                    vec4f sp = camera->homogenize(clip_p[j]);
-                    screen_p[j] = vec2f(sp.x, sp.y);
+                    // 归一化到单位体积 cvv
+                    clip_p[j] *= 1.0f / clip_p[j].w;
 
-                    boxmin.x = std::max(0.0f, std::min(boxmin.x, screen_p[j].x));
-                    boxmin.y = std::max(0.0f, std::min(boxmin.y, screen_p[j].y));
-                    boxmax.x = std::min(screen_clamp.x, std::max(boxmax.x, screen_p[j].x));
-                    boxmax.y = std::min(screen_clamp.y, std::max(boxmax.y, screen_p[j].y));
+                    // 屏幕坐标
+                    spf[j] = camera->homogenize(clip_p[j]).xy();
+
+                    // 整数屏幕坐标：加0.5的偏移取屏幕像素方格中心对齐
+                    spi[j].x = (int) (spf[j].x + 0.5f);
+                    spi[j].y = (int) (spf[j].y + 0.5f);
+
+                    box_min.x = std::max(0, std::min(box_min.x, spi[j].x));
+                    box_min.y = std::max(0, std::min(box_min.y, spi[j].y));
+                    box_max.x = std::min(width - 1, std::max(box_max.x, spi[j].x));
+                    box_max.y = std::min(height - 1, std::max(box_max.y, spi[j].y));
                 }
 
-                for (int x = (int) boxmin.x; x < (int) boxmax.x; x++) {
-                    for (int y = (int) boxmin.y; y < (int) boxmax.y; y++) {
-                        vec3f bc_screen = math::barycentric(screen_p[0], screen_p[1], screen_p[2], vec2f(x, y));
+                vec4f v01 = clip_p[1] - clip_p[0];
+                vec4f v02 = clip_p[2] - clip_p[0];
+                vec4f normal = vec_cross(v01, v02);
+
+                if (normal.z == 0.0f) {
+                    return;
+                }
+
+                for (int x = box_min.x; x < box_max.x; x++) {
+                    for (int y = box_min.y; y < box_max.y; y++) {
+                        vec3f bc_screen = math::barycentric(spi[0], spi[1], spi[2], vec2i(x, y));
                         if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0) {
                             continue;
                         }

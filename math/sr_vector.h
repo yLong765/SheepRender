@@ -252,6 +252,13 @@ namespace SR {
         return lv;
     }
 
+    // lv *= x
+    template<size_t N, typename T>
+    inline sr_vector<N, T> &operator*=(sr_vector<N, T> &lv, const T &x) {
+        for (size_t i = 0; i < N; i++) lv[i] *= x;
+        return lv;
+    }
+
     // lv *= rv
     template<size_t N, typename T>
     inline sr_vector<N, T> &operator*=(sr_vector<N, T> &lv, const sr_vector<N, T> &rv) {
@@ -311,6 +318,11 @@ namespace SR {
         return {lv.y * rv.z - lv.z * rv.y, lv.z * rv.x - lv.x * rv.z, lv.x * rv.y - lv.y * rv.x};
     }
 
+    // 四维叉乘
+    template<typename T>
+    inline sr_vector<4, T> vec_cross(const sr_vector<4, T> &lv, const sr_vector<4, T> &rv) {
+        return {lv.y * rv.z - lv.z * rv.y, lv.z * rv.x - lv.x * rv.z, lv.x * rv.y - lv.y * rv.x, lv.w};
+    }
 
     template<size_t N, typename T>
     inline T vec_sqr_magnitude(const sr_vector<N, T> v) {
@@ -330,8 +342,8 @@ namespace SR {
     typedef sr_vector<2, float> vec2f;
     typedef sr_vector<3, float> vec3f;
     typedef sr_vector<4, float> vec4f;
-    typedef sr_vector<2, int> vec2fi;
-    typedef sr_vector<3, int> vec3fi;
+    typedef sr_vector<2, int> vec2i;
+    typedef sr_vector<3, int> vec3i;
 }
 
 #endif //SHEEPRENDER_SR_VECTOR_H

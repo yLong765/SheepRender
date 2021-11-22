@@ -59,7 +59,7 @@ namespace SR {
 
         vec4f homogenize(const vec4f v) {
             vec4f ret;
-            float rhw = 1.0f / v.w;
+            float rhw = 1.0f / v.w; // w的倒数
             ret.x = (v.x * rhw + 1.0f) * w * 0.5f;
             ret.y = (1.0f - v.y * rhw) * h * 0.5f;
             ret.z = v.z * rhw;
