@@ -40,6 +40,10 @@ namespace SR {
             return world;
         }
 
+        vec3f forward() {
+            return (vec3f::forward().xyz1() * get_world_matrix()).xyz();
+        }
+
 
     } transform;
 }

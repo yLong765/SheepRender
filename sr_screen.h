@@ -101,7 +101,7 @@ namespace SR {
         BITMAPINFO bi;
         bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
         bi.bmiHeader.biWidth = width;
-        bi.bmiHeader.biHeight = height;
+        bi.bmiHeader.biHeight = -height;
         bi.bmiHeader.biPlanes = 1;
         bi.bmiHeader.biBitCount = 32;
         bi.bmiHeader.biCompression = BI_RGB;

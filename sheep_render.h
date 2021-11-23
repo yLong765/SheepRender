@@ -16,6 +16,7 @@
 #include <vector>
 #include <cfloat>
 #include <windows.h>
+#include <ctime>
 
 // define
 #include "sr_macro.h"

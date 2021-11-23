@@ -118,6 +118,77 @@ namespace SR {
             }
         }
 
+        void draw_js_normal(sr_object obj, sr_color color) const {
+            mat4x4f model = obj.transform.get_world_matrix();
+            mat4x4f view = camera->get_look_at_matrix();
+            mat4x4f projection = camera->get_perspective_matrix();
+            mat4x4f mvp = model * view * projection;
+            for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
+                vec4f mpf[3];
+                vec4f cpf[3];
+                vec4f spf[3];
+                for (int j = 0; j < 3; j++) {
+                    int id = obj.mesh.triangles[i + j];
+                    mpf[j] = obj.mesh.vertices[id].xyz1();
+                    cpf[j] = obj.mesh.vertices[id].xyz1() * mvp;
+                    spf[j] = camera->homogenize(cpf[j]);
+                }
+                vec4f v01 = mpf[1] - spf[0];
+                vec4f v02 = mpf[2] - spf[0];
+                vec4f normal = vec_normalize(vec_cross(v01, v02));
+                vec4f npf[3] = {mpf[0] + normal, mpf[1] + normal, mpf[2] + normal};
+                for (int j = 0; j < 3; j++) {
+                    npf[j] = npf[j] * mvp;
+                    npf[j] = camera->homogenize(npf[j]);
+                    draw_line(spf[j], npf[j], color);
+                }
+            }
+        }
+
+        void draw_axis(sr_object obj) const {
+            mat4x4f model = obj.transform.get_world_matrix();
+            mat4x4f view = camera->get_look_at_matrix();
+            mat4x4f projection = camera->get_perspective_matrix();
+            // z forward
+            vec4f p = obj.transform.position.xyz1();
+            vec4f fp = vec4f(0, 0, 1, 1) * model + p;
+            p = p * view * projection;
+            fp = fp * view * projection;
+            p = camera->homogenize(p);
+            fp = camera->homogenize(fp);
+            draw_line(p, fp, color(0, 0, 1));
+            // y up
+            p = obj.transform.position.xyz1();
+            fp = vec4f(0, 1, 0, 1) * model + p;
+            p = p * view * projection;
+            fp = fp * view * projection;
+            p = camera->homogenize(p);
+            fp = camera->homogenize(fp);
+            draw_line(p, fp, color(0, 1, 0));
+            // x right
+            p = obj.transform.position.xyz1();
+            fp = vec4f(1, 0, 0, 1) * model + p;
+            p = p * view * projection;
+            fp = fp * view * projection;
+            p = camera->homogenize(p);
+            fp = camera->homogenize(fp);
+            draw_line(p, fp, color(1, 0, 0));
+//            p1 = vec4f(1.0f, 0.0f, 0.0f, 1.0f);
+//            p2 = vec4f(0.0f, 0.0f, 0.0f, 1.0f);
+//            p1 = p1 * view * projection;
+//            p2 = p2 * view * projection;
+//            p1 = camera->homogenize(p1);
+//            p2 = camera->homogenize(p2);
+//            draw_line(p1, p2, color(1, 0, 0));
+//            p1 = vec4f(0.0f, 0.0f, 1.0f, 1.0f);
+//            p2 = vec4f(0.0f, 0.0f, 0.0f, 1.0f);
+//            p1 = p1 * view * projection;
+//            p2 = p2 * view * projection;
+//            p1 = camera->homogenize(p1);
+//            p2 = camera->homogenize(p2);
+//            draw_line(p1, p2, color(0, 0, 1));
+        }
+
         void draw(sr_object obj) const {
             shader *shader = obj.mesh.shader;
             shader->mat_model = obj.transform.get_world_matrix();
@@ -172,7 +243,8 @@ namespace SR {
                 }
             }
         }
-    } render;
+    }
+            render;
 }
 
 #endif //SHEEPRENDER_SR_RENDER_H

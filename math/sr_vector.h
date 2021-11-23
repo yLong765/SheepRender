@@ -301,7 +301,7 @@ namespace SR {
     // 点乘
     template<size_t N, typename T>
     inline T vec_dot(const sr_vector<N, T> &lv, const sr_vector<N, T> &rv) {
-        T ret;
+        T ret = 0.0f;
         for (size_t i = 0; i < N; i++) ret += lv[i] * rv[i];
         return ret;
     }
