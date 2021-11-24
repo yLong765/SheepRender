@@ -28,6 +28,13 @@ namespace SR {
             }
         }
 
+        void clear_z_buffer() {
+            int pixel_count = width * height;
+            for (int i = 0; i < pixel_count; i++) {
+                z_buffer[i] = FLT_MAX;
+            }
+        }
+
         void draw_pixel(int x, int y, color color) const {
             if (x >= 0 && x < width && y >= 0 && y < height) {
                 texture->set(x, y, color);
@@ -130,11 +137,11 @@ namespace SR {
                 for (int j = 0; j < 3; j++) {
                     int id = obj.mesh.triangles[i + j];
                     mpf[j] = obj.mesh.vertices[id].xyz1();
-                    cpf[j] = obj.mesh.vertices[id].xyz1() * mvp;
+                    cpf[j] = mpf[j] * mvp;
                     spf[j] = camera->homogenize(cpf[j]);
                 }
-                vec4f v01 = mpf[1] - spf[0];
-                vec4f v02 = mpf[2] - spf[0];
+                vec4f v01 = mpf[1] - mpf[0];
+                vec4f v02 = mpf[2] - mpf[0];
                 vec4f normal = vec_normalize(vec_cross(v01, v02));
                 vec4f npf[3] = {mpf[0] + normal, mpf[1] + normal, mpf[2] + normal};
                 for (int j = 0; j < 3; j++) {
@@ -173,20 +180,6 @@ namespace SR {
             p = camera->homogenize(p);
             fp = camera->homogenize(fp);
             draw_line(p, fp, color(1, 0, 0));
-//            p1 = vec4f(1.0f, 0.0f, 0.0f, 1.0f);
-//            p2 = vec4f(0.0f, 0.0f, 0.0f, 1.0f);
-//            p1 = p1 * view * projection;
-//            p2 = p2 * view * projection;
-//            p1 = camera->homogenize(p1);
-//            p2 = camera->homogenize(p2);
-//            draw_line(p1, p2, color(1, 0, 0));
-//            p1 = vec4f(0.0f, 0.0f, 1.0f, 1.0f);
-//            p2 = vec4f(0.0f, 0.0f, 0.0f, 1.0f);
-//            p1 = p1 * view * projection;
-//            p2 = p2 * view * projection;
-//            p1 = camera->homogenize(p1);
-//            p2 = camera->homogenize(p2);
-//            draw_line(p1, p2, color(0, 0, 1));
         }
 
         void draw(sr_object obj) const {
@@ -196,46 +189,60 @@ namespace SR {
             shader->mat_proj = camera->get_perspective_matrix();
             shader->mat_mvp = shader->mat_model * shader->mat_view * shader->mat_proj;
             for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
-                vec4f clip_p[3];    // 齐次空间坐标
-                vec2f spf[3];       // 屏幕坐标
-                vec2i spi[3];       // 整数屏幕坐标
+                vec4f cpf[3];   // 齐次空间坐标
+                vec2f spf[3];   // 屏幕坐标
+                vec2i spi[3];   // 整数屏幕坐标
 
                 vec2i box_min(width - 1, height - 1);
                 vec2i box_max(0, 0);
 
                 for (int j = 0; j < 3; j++) {
                     int id = obj.mesh.triangles[i + j];
-                    clip_p[j] = obj.mesh.shader->vert(obj.mesh.vertices[id].xyz1(), obj.mesh.normals[id].xyz1());
-                    // 归一化到单位体积 cvv
-                    clip_p[j] *= 1.0f / clip_p[j].w;
+                    cpf[j] = obj.mesh.shader->vert({obj.mesh.vertices[id], obj.mesh.normals[id]});
+
+                    // 1 / w
+                    float rhw = 1.0f / cpf[j].w;
+                    // 归一化到[-1, 1] cvv
+                    cpf[j] *= rhw;
 
                     // 屏幕坐标
-                    spf[j] = camera->homogenize(clip_p[j]).xy();
+                    spf[j].x = (cpf[j].x + 1.0f) * width * 0.5f;
+                    spf[j].y = (1.0f - cpf[j].y) * height * 0.5f;
 
                     // 整数屏幕坐标：加0.5的偏移取屏幕像素方格中心对齐
                     spi[j].x = (int) (spf[j].x + 0.5f);
                     spi[j].y = (int) (spf[j].y + 0.5f);
 
+                    // 三角形外接矩形
                     box_min.x = std::max(0, std::min(box_min.x, spi[j].x));
                     box_min.y = std::max(0, std::min(box_min.y, spi[j].y));
                     box_max.x = std::min(width - 1, std::max(box_max.x, spi[j].x));
                     box_max.y = std::min(height - 1, std::max(box_max.y, spi[j].y));
                 }
 
-                vec4f v01 = clip_p[1] - clip_p[0];
-                vec4f v02 = clip_p[2] - clip_p[0];
+                // 判断三角形朝向
+                vec4f v01 = cpf[1] - cpf[0];
+                vec4f v02 = cpf[2] - cpf[0];
                 vec4f normal = vec_cross(v01, v02);
 
-                if (normal.z == 0.0f) {
-                    return;
-                }
+                // 左手坐标系Z轴朝相机观察方向，z > 0说明与相机朝向方向相同所以舍去不绘制
+                if (normal.z > 0.0f) continue;
 
                 for (int x = box_min.x; x < box_max.x; x++) {
                     for (int y = box_min.y; y < box_max.y; y++) {
-                        vec3f bc_screen = math::barycentric(spi[0], spi[1], spi[2], vec2i(x, y));
-                        if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0) {
-                            continue;
-                        }
+                        // 屏幕重心坐标比例
+                        vec3f bc_s = math::barycentric(spi, vec2i(x, y));
+                        if (bc_s.x < 0 || bc_s.y < 0 || bc_s.z < 0) continue;
+
+                        // 屏幕坐标系中的重心坐标无法为透视变换前的顶点坐标组插值。因为透视变换破坏了深度Z的线性关系
+                        // 所以要将屏幕的重心坐标比例转换到齐次坐标系得重心坐标比例
+                        vec3f bc_c(bc_s.x / cpf[0].w, bc_s.y / cpf[1].w, bc_s.z / cpf[2].w);
+                        bc_c = bc_c / (bc_c.x + bc_c.y + bc_c.z);
+                        float z_depth = bc_c.x * cpf[0].z + bc_c.y * cpf[1].z + bc_c.z * cpf[2].z;
+                        // 左手坐标系Z轴朝相机观察方向，深度由小变大（与OpenGL相反）
+                        if (z_depth > z_buffer[x + y * width]) continue;
+                        z_buffer[x + y * width] = z_depth;
+
                         color color;
                         obj.mesh.shader->frag(color);
                         draw_pixel(x, y, color);

@@ -12,11 +12,11 @@ namespace SR {
         vec3f n_world;
         float intensity;
 
-        vec4f vert(vec4f vertex, vec4f normal) override {
-            n_world = vec_normalize((normal * mat_invert(mat_model).transpose()).xyz());
+        vec4f vert(vert_in in) override {
+            n_world = vec_normalize(in.normal * mat_invert(mat_model).transpose());
             intensity = vec_dot(n_world, vec3f(0, 1, 0));
             intensity = std::min(1.0f, std::max(0.0f, intensity) + 0.1f);
-            return vertex * mat_mvp;
+            return in.vertex.xyz1() * mat_mvp;
         }
 
         bool frag(sr_color &color) override {

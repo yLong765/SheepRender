@@ -11,6 +11,8 @@ namespace SR {
         int w, h;
         float n, f, fovy;
 
+        vec3f zaxis, xaxis, yaxis;
+
         sr_camera(vec3f from, vec3f to, vec3f up, int w, int h, float n = 1.0f, float f = 500.0f,
                   float fovy = PI * 0.5f) {
             this->from = from;
@@ -23,10 +25,14 @@ namespace SR {
             this->fovy = fovy;
         }
 
-        mat4x4f get_look_at_matrix() const {
-            vec3f zaxis = vec_normalize(to - from);
-            vec3f xaxis = vec_normalize(vec_cross(up, zaxis));
-            vec3f yaxis = vec_cross(zaxis, xaxis);
+        vec3f forward() {
+            return zaxis;
+        }
+
+        mat4x4f get_look_at_matrix() {
+            zaxis = vec_normalize(to - from);
+            xaxis = vec_normalize(vec_cross(up, zaxis));
+            yaxis = vec_cross(zaxis, xaxis);
 
             mat4x4f ret;
             ret.set_row(0, {xaxis.x, yaxis.x, zaxis.x, 0});

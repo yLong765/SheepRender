@@ -21,6 +21,11 @@ namespace SR {
             }
             return {1.0f - (u.x + u.y) / u.z, u.x / u.z, u.y / u.z};
         }
+
+        // 利用重心坐标判断点是否在三角形内部
+        static vec3f barycentric(const vec2i *Ps, const vec2i P) {
+            return barycentric(Ps[0], Ps[1], Ps[2], P);
+        }
     } math;
 }
 

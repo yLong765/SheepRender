@@ -17,9 +17,18 @@ namespace SR {
         mat4x4f mat_proj;
         mat4x4f mat_mvp;
 
+        struct vert_in {
+            vec3f vertex;
+            vec3f normal;
+        };
+
+        struct frag_in {
+
+        };
+
         sr_shader() = default;
 
-        virtual vec4f vert(vec4f vertex, vec4f normal) = 0;
+        virtual vec4f vert(vert_in in) = 0;
 
         virtual bool frag(sr_color &color) = 0;
     } shader;
