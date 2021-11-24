@@ -36,6 +36,7 @@
 
 // component
 #include "sr_transform.h"
+#include "sr_light.h"
 #include "sr_camera.h"
 #include "sr_mesh.h"
 

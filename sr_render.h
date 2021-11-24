@@ -12,13 +12,15 @@ namespace SR {
         sr_texture_2d *texture;
         float *z_buffer;
         sr_camera *camera;
+        sr_light *light;
 
-        sr_render(sr_texture_2d *texture, sr_camera *camera) {
+        sr_render(sr_texture_2d *texture, sr_camera *camera, sr_light *light) {
             this->width = texture->width;
             this->height = texture->height;
             this->texture = texture;
             this->z_buffer = (float *) malloc(sizeof(float) * width * height);
             this->camera = camera;
+            this->light = light;
         }
 
         void clear_color(color color) const {

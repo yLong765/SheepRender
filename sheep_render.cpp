@@ -7,9 +7,10 @@ int width = 800, height = 600;
 int main() {
     screen screen = create_screen(width, height, "sheep render");
     camera camera(vec3f(0, 2, -3.5f), vec3f::zero(), vec3f::up(), width, height);
+    light light;
     object obj("../model/cube.obj");
     texture_2d texture(width, height);
-    render render(&texture, &camera);
+    render render(&texture, &camera, &light);
 
     vec2f prev_mouse_point;
     vec2f mouse_change = vec2f(0, 0);
