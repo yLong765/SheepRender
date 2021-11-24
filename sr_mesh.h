@@ -14,12 +14,15 @@ namespace SR {
         sr_shader *shader;
 
         sr_mesh() {
-            shader = new sr_phong_shader();
+            shader = new sr_constant_shader();
         };
 
-        void set_shader(shader_type type) {
+        void set_shader(SHADER_TYPE type) {
             switch (type) {
-                case PHONG:
+                case CONSTANT_SHADER:
+                    shader = new sr_constant_shader();
+                    break;
+                case PHONG_SHADER:
                     shader = new sr_phong_shader();
                     break;
             }

@@ -32,7 +32,7 @@
 
 // shdaer
 #include "shader/sr_shader.h"
-#include "shader/sr_phong_shader.h"
+#include "shader/sr_constant_shader.h"
 
 // component
 #include "sr_transform.h"

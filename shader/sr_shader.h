@@ -7,8 +7,9 @@
 
 namespace SR {
 
-    enum shader_type {
-        PHONG,
+    enum SHADER_TYPE {
+        CONSTANT_SHADER,
+        PHONG_SHADER,
     };
 
     typedef struct sr_shader {

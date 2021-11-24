@@ -6,6 +6,7 @@
 #define SHEEPRENDER_SR_SHADER_INC_H
 
 #include "sr_shader.h"
-#include "sr_phong_shader.h"
+#include "sr_constant_shader.h"
+#define "sr_phong_shader.h"
 
 #endif //SHEEPRENDER_SR_SHADER_INC_H

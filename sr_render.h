@@ -13,6 +13,7 @@ namespace SR {
         float *z_buffer;
         sr_camera *camera;
         sr_light *light;
+        bool ZTEST;
 
         sr_render(sr_texture_2d *texture, sr_camera *camera, sr_light *light) {
             this->width = texture->width;
@@ -21,6 +22,7 @@ namespace SR {
             this->z_buffer = (float *) malloc(sizeof(float) * width * height);
             this->camera = camera;
             this->light = light;
+            ZTEST = true;
         }
 
         void clear_color(color color) const {
@@ -160,7 +162,7 @@ namespace SR {
             mat4x4f projection = camera->get_perspective_matrix();
             // z forward
             vec4f p = obj.transform.position.xyz1();
-            vec4f fp = vec4f(0, 0, 1, 1) * model + p;
+            vec4f fp = vec4f(0, 0, 3, 1) * model + p;
             p = p * view * projection;
             fp = fp * view * projection;
             p = camera->homogenize(p);
@@ -168,7 +170,7 @@ namespace SR {
             draw_line(p, fp, color(0, 0, 1));
             // y up
             p = obj.transform.position.xyz1();
-            fp = vec4f(0, 1, 0, 1) * model + p;
+            fp = vec4f(0, 3, 0, 1) * model + p;
             p = p * view * projection;
             fp = fp * view * projection;
             p = camera->homogenize(p);
@@ -176,7 +178,7 @@ namespace SR {
             draw_line(p, fp, color(0, 1, 0));
             // x right
             p = obj.transform.position.xyz1();
-            fp = vec4f(1, 0, 0, 1) * model + p;
+            fp = vec4f(3, 0, 0, 1) * model + p;
             p = p * view * projection;
             fp = fp * view * projection;
             p = camera->homogenize(p);
