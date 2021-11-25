@@ -13,6 +13,7 @@ namespace SR {
     static int screen_exit;
 
     typedef struct sr_screen {
+        WNDCLASS wc;
         HWND handle;
         int width;
         int height;
@@ -44,6 +45,10 @@ namespace SR {
             GetCursorPos(&point);
             ScreenToClient(handle, &point);
             return vec2f{(float) point.x, (float) point.y};
+        }
+
+        void set_title(const char *title) {
+            SetWindowTextA(handle, title);
         }
     } screen;
 
@@ -143,6 +148,7 @@ namespace SR {
         memset(keys, 0, sizeof(int) * 512);
 
         sr_screen screen{};
+        screen.wc = wc;
         screen.handle = handle;
         screen.width = width;
         screen.height = height;

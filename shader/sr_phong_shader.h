@@ -26,7 +26,7 @@ namespace SR {
             vec3f light_dir = vec_normalize(-light.direction);
             vec3f diffuse = diff * std::max(vec_dot(normal_dir, light_dir), 0.0f) * light.color;
             vec3f rel = vec_normalize(normal_dir * vec_dot(normal_dir, light_dir) * 2.0f - light_dir);
-            vec3f specular = spec * std::pow(std::max(vec_dot(view_dir, rel), 0.0f), 32) * light.color;
+            vec3f specular = spec * std::pow(std::max(vec_dot(view_dir, rel), 0.0f), 64) * light.color;
             color.set(ambient + diffuse + specular);
             return true;
         }
