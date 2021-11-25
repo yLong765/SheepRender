@@ -12,14 +12,16 @@ namespace SR {
 
         sr_constant_shader() = default;
 
-        vec4f vert(vert_in in) override {
-            vec3f n_world = vec_normalize(in.normal * mat_invert(mat_model).transpose());
-            intensity = vec_dot(n_world, vec3f(0, 1, 0));
+        vert_out vert(vert_in in) override {
+            vert_out out;
+            out.v4f[VERTEX_CLIP] = in.v3f[VERTEX_MODEL].xyz1() * get_mvp();
+            vec3f normal_w = vec_normalize(in.v3f[NORMAL_MODEL] * mat_invert(mat_model).transpose());
+            intensity = vec_dot(normal_w, -light.direction);
             intensity = std::min(1.0f, std::max(0.0f, intensity) + 0.1f);
-            return in.vertex.xyz1() * mat_mvp;
+            return out;
         }
 
-        bool frag(sr_color &color) override {
+        bool frag(frag_in in, sr_color &color) override {
             if (intensity > 0) {
                 color.set(intensity, intensity, intensity, 1);
             }

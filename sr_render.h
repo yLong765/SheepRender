@@ -7,22 +7,36 @@
 
 namespace SR {
     typedef struct sr_render {
+    private:
         int width;
         int height;
         sr_texture_2d *texture;
-        float *z_buffer;
         sr_camera *camera;
         sr_light *light;
-        bool ZTEST;
+        float *z_buffer;
 
+    public:
         sr_render(sr_texture_2d *texture, sr_camera *camera, sr_light *light) {
             this->width = texture->width;
             this->height = texture->height;
             this->texture = texture;
-            this->z_buffer = (float *) malloc(sizeof(float) * width * height);
             this->camera = camera;
             this->light = light;
-            ZTEST = true;
+            this->z_buffer = (float *) malloc(sizeof(float) * width * height);
+        }
+
+        void set_texture(sr_texture_2d *texture) {
+            this->texture = texture;
+            this->width = texture->width;
+            this->height = texture->height;
+        }
+
+        void set_camera(sr_camera *camera) {
+            this->camera = camera;
+        }
+
+        void set_light(sr_light *light) {
+            this->light = light;
         }
 
         void clear_color(color color) const {
@@ -101,13 +115,13 @@ namespace SR {
         void draw_wireframe(sr_object obj, sr_color color) const {
             mat4x4f model = obj.transform.get_world_matrix();
             mat4x4f view = camera->get_look_at_matrix();
-            mat4x4f projection = camera->get_perspective_matrix();
+            mat4x4f projection = camera->get_perspective_matrix(aspect(width, height));
             mat4x4f mvp = model * view * projection;
             for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
                 vec4f screen_point[3];
                 for (int j = 0; j < 3; j++) {
                     int id = obj.mesh.triangles[i + j];
-                    screen_point[j] = camera->homogenize(obj.mesh.vertices[id].xyz1() * mvp);
+                    screen_point[j] = camera->homogenize(obj.mesh.vertices[id].xyz1() * mvp, width, height);
                 }
                 draw_triangle_wireframe(screen_point[0], screen_point[1], screen_point[2], color);
             }
@@ -116,14 +130,14 @@ namespace SR {
         void draw_normal(sr_object obj, sr_color color) const {
             mat4x4f model = obj.transform.get_world_matrix();
             mat4x4f view = camera->get_look_at_matrix();
-            mat4x4f projection = camera->get_perspective_matrix();
+            mat4x4f projection = camera->get_perspective_matrix(aspect(width, height));
             mat4x4f mvp = model * view * projection;
             for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
                 for (int j = 0; j < 3; j++) {
                     int id = obj.mesh.triangles[i + j];
-                    vec4f screen_point = camera->homogenize(obj.mesh.vertices[id].xyz1() * mvp);
+                    vec4f screen_point = camera->homogenize(obj.mesh.vertices[id].xyz1() * mvp, width, height);
                     vec4f screen_normal = camera->homogenize(
-                            (obj.mesh.vertices[id] + obj.mesh.normals[id]).xyz1() * mvp);
+                            (obj.mesh.vertices[id] + obj.mesh.normals[id]).xyz1() * mvp, width, height);
                     draw_line(screen_point, screen_normal, color);
                 }
             }
@@ -132,7 +146,7 @@ namespace SR {
         void draw_js_normal(sr_object obj, sr_color color) const {
             mat4x4f model = obj.transform.get_world_matrix();
             mat4x4f view = camera->get_look_at_matrix();
-            mat4x4f projection = camera->get_perspective_matrix();
+            mat4x4f projection = camera->get_perspective_matrix(aspect(width, height));
             mat4x4f mvp = model * view * projection;
             for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
                 vec4f mpf[3];
@@ -142,7 +156,7 @@ namespace SR {
                     int id = obj.mesh.triangles[i + j];
                     mpf[j] = obj.mesh.vertices[id].xyz1();
                     cpf[j] = mpf[j] * mvp;
-                    spf[j] = camera->homogenize(cpf[j]);
+                    spf[j] = camera->homogenize(cpf[j], width, height);
                 }
                 vec4f v01 = mpf[1] - mpf[0];
                 vec4f v02 = mpf[2] - mpf[0];
@@ -150,7 +164,7 @@ namespace SR {
                 vec4f npf[3] = {mpf[0] + normal, mpf[1] + normal, mpf[2] + normal};
                 for (int j = 0; j < 3; j++) {
                     npf[j] = npf[j] * mvp;
-                    npf[j] = camera->homogenize(npf[j]);
+                    npf[j] = camera->homogenize(npf[j], width, height);
                     draw_line(spf[j], npf[j], color);
                 }
             }
@@ -159,50 +173,62 @@ namespace SR {
         void draw_axis(sr_object obj) const {
             mat4x4f model = obj.transform.get_world_matrix();
             mat4x4f view = camera->get_look_at_matrix();
-            mat4x4f projection = camera->get_perspective_matrix();
+            mat4x4f projection = camera->get_perspective_matrix(aspect(width, height));
             // z forward
             vec4f p = obj.transform.position.xyz1();
             vec4f fp = vec4f(0, 0, 3, 1) * model + p;
             p = p * view * projection;
             fp = fp * view * projection;
-            p = camera->homogenize(p);
-            fp = camera->homogenize(fp);
+            p = camera->homogenize(p, width, height);
+            fp = camera->homogenize(fp, width, height);
             draw_line(p, fp, color(0, 0, 1));
             // y up
             p = obj.transform.position.xyz1();
             fp = vec4f(0, 3, 0, 1) * model + p;
             p = p * view * projection;
             fp = fp * view * projection;
-            p = camera->homogenize(p);
-            fp = camera->homogenize(fp);
+            p = camera->homogenize(p, width, height);
+            fp = camera->homogenize(fp, width, height);
             draw_line(p, fp, color(0, 1, 0));
             // x right
             p = obj.transform.position.xyz1();
             fp = vec4f(3, 0, 0, 1) * model + p;
             p = p * view * projection;
             fp = fp * view * projection;
-            p = camera->homogenize(p);
-            fp = camera->homogenize(fp);
+            p = camera->homogenize(p, width, height);
+            fp = camera->homogenize(fp, width, height);
             draw_line(p, fp, color(1, 0, 0));
         }
 
-        void draw(sr_object obj) const {
+        void shader_context_init(sr_shader *shader) {
+            shader->mat_view = camera->get_look_at_matrix();
+            shader->mat_proj = camera->get_perspective_matrix(aspect(width, height));
+            shader->light.color = light->color.c;
+            shader->light.direction = light->direction;
+            shader->light.position = light->position;
+            shader->view_pos = camera->from;
+        }
+
+        void draw(sr_object obj) {
             shader *shader = obj.mesh.shader;
             shader->mat_model = obj.transform.get_world_matrix();
-            shader->mat_view = camera->get_look_at_matrix();
-            shader->mat_proj = camera->get_perspective_matrix();
-            shader->mat_mvp = shader->mat_model * shader->mat_view * shader->mat_proj;
+            shader_context_init(shader);
             for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
                 vec4f cpf[3];   // 齐次空间坐标
                 vec2f spf[3];   // 屏幕坐标
                 vec2i spi[3];   // 整数屏幕坐标
+                vert_out out[3];   // 顶点输出
 
                 vec2i box_min(width - 1, height - 1);
                 vec2i box_max(0, 0);
 
                 for (int j = 0; j < 3; j++) {
                     int id = obj.mesh.triangles[i + j];
-                    cpf[j] = obj.mesh.shader->vert({obj.mesh.vertices[id], obj.mesh.normals[id]});
+                    vert_in in;
+                    in.v3f[VERTEX_MODEL] = obj.mesh.vertices[id];
+                    in.v3f[NORMAL_MODEL] = obj.mesh.normals[id];
+                    out[j] = shader->vert(in);
+                    cpf[j] = out[j].v4f[VERTEX_CLIP];
 
                     // 1 / w
                     float rhw = 1.0f / cpf[j].w;
@@ -247,15 +273,37 @@ namespace SR {
                         if (z_depth > z_buffer[x + y * width]) continue;
                         z_buffer[x + y * width] = z_depth;
 
+                        // 插值
+                        frag_in in;
+
+                        for (auto &it : out[0].f) {
+                            SHADER_KEY_TYPE key = it.first;
+                            in.f[key] = bc_c.x * out[0].f[key] + bc_c.y * out[1].f[key] + bc_c.z * out[2].f[key];
+                        }
+
+                        for (auto &it : out[0].v2f) {
+                            SHADER_KEY_TYPE key = it.first;
+                            in.v2f[key] = bc_c.x * out[0].v2f[key] + bc_c.y * out[1].v2f[key] + bc_c.z * out[2].v2f[key];
+                        }
+
+                        for (auto &it : out[0].v3f) {
+                            SHADER_KEY_TYPE key = it.first;
+                            in.v3f[key] = bc_c.x * out[0].v3f[key] + bc_c.y * out[1].v3f[key] + bc_c.z * out[2].v3f[key];
+                        }
+
+                        for (auto &it : out[0].v4f) {
+                            SHADER_KEY_TYPE key = it.first;
+                            in.v4f[key] = bc_c.x * out[0].v4f[key] + bc_c.y * out[1].v4f[key] + bc_c.z * out[2].v4f[key];
+                        }
+
                         color color;
-                        obj.mesh.shader->frag(color);
+                        if (!shader->frag(in, color)) continue;
                         draw_pixel(x, y, color);
                     }
                 }
             }
         }
-    }
-            render;
+    } render;
 }
 
 #endif //SHEEPRENDER_SR_RENDER_H

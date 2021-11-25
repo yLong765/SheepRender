@@ -19,14 +19,14 @@ namespace SR {
         HDC memory_dc;
         UINT *frame_buffer;
 
-        void set_buffer(sr_texture_2d *texture) {
+        void set_buffer(sr_texture_2d *texture) const {
             int pixel_count = width * height;
             for (int i = 0; i < pixel_count; i++) {
                 frame_buffer[i] = (*texture)[i].get_pixel_color();
             }
         }
 
-        void update_hdc() {
+        void update_hdc() const {
             HDC hDC = GetDC(handle);
             BitBlt(hDC, 0, 0, width, height, memory_dc, 0, 0, SRCCOPY);
             ReleaseDC(handle, hDC);

@@ -12,26 +12,54 @@ namespace SR {
         PHONG_SHADER,
     };
 
+    enum SHADER_KEY_TYPE {
+        VERTEX_MODEL = 0,
+        VERTEX_CLIP = 1,
+        NORMAL_MODEL = 2,
+        NORMAL_WORLD = 3,
+        VIEW_WORLD = 4,
+    };
+
+    typedef struct shader_context {
+        std::map<SHADER_KEY_TYPE, float> f;
+        std::map<SHADER_KEY_TYPE, vec2f> v2f;
+        std::map<SHADER_KEY_TYPE, vec3f> v3f;
+        std::map<SHADER_KEY_TYPE, vec4f> v4f;
+    } vert_in, vert_out, frag_in;
+
+    struct vary_context {
+        shader_context context[3];
+
+        shader_context &operator[](const size_t i) {
+            assert(i < 3);
+            return context[i];
+        }
+
+        shader_context operator[](const size_t i) const {
+            assert(i < 3);
+            return context[i];
+        }
+    };
+
     typedef struct sr_shader {
         mat4x4f mat_model;
         mat4x4f mat_view;
         mat4x4f mat_proj;
-        mat4x4f mat_mvp;
+        vec3f view_pos;
 
-        struct vert_in {
-            vec3f vertex;
-            vec3f normal;
-        };
-
-        struct frag_in {
-
-        };
+        struct Light {
+            vec3f color;
+            vec3f direction;
+            vec3f position;
+        } light;
 
         sr_shader() = default;
 
-        virtual vec4f vert(vert_in in) = 0;
+        mat4x4f get_mvp() const { return mat_model * mat_view * mat_proj; }
 
-        virtual bool frag(sr_color &color) = 0;
+        virtual vert_out vert(vert_in in) = 0;
+
+        virtual bool frag(frag_in in, sr_color &color) = 0;
     } shader;
 }
 

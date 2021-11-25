@@ -6,9 +6,10 @@ int width = 800, height = 600;
 
 int main() {
     screen screen = create_screen(width, height, "sheep render");
-    camera camera(vec3f(0, 2, -3.5f), vec3f::zero(), vec3f::up(), width, height);
-    light light;
-    object obj("../model/cube.obj");
+    camera camera(vec3f(0, 2, -3.5f), vec3f::zero(), vec3f::up());
+    light light({1, 1, 1}, {1, 2, 1});
+    object obj("../model/shape.obj");
+    obj.set_shader(PHONG_SHADER);
     texture_2d texture(width, height);
     render render(&texture, &camera, &light);
 

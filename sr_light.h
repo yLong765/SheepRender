@@ -8,22 +8,31 @@
 namespace SR {
     enum LIGHT_TYPE {
         LIGHT_DIRECTIONAL,
+        LIGHT_POINT,
     };
 
     typedef struct sr_light {
+        LIGHT_TYPE light_type;  // 光类型
+        sr_color color;         // 光颜色
+        vec3f position{};         // 光位置
+        // 方向光数据
         vec3f direction{};
-        LIGHT_TYPE light_type;
+        // 点光源数据
+        float range{};
 
-        sr_light() {
-            light_type = LIGHT_DIRECTIONAL;
-            direction = vec3f(0, -1, 0);
+        sr_light(sr_color color, vec3f position) {
+            this->position = position;
+            this->color = color;
+            set_direction_light({0, -1, 0});
         }
 
-        vec3f get_light_dir() const {
-            switch (light_type) {
-                case LIGHT_DIRECTIONAL:
-                    return -direction;
-            }
+        void set_direction_light(vec3f direction) {
+            this->light_type = LIGHT_DIRECTIONAL;
+            this->direction = direction;
+        }
+
+        void set_point_light(float range) {
+            this->range = range;
         }
     } light;
 }

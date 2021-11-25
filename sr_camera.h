@@ -8,18 +8,15 @@
 namespace SR {
     typedef struct sr_camera {
         vec3f from{}, to{}, up{};
-        int w, h;
         float n, f, fovy;
 
         vec3f zaxis, xaxis, yaxis;
 
-        sr_camera(vec3f from, vec3f to, vec3f up, int w, int h, float n = 1.0f, float f = 500.0f,
+        sr_camera(vec3f from, vec3f to, vec3f up, float n = 1.0f, float f = 500.0f,
                   float fovy = PI * 0.5f) {
             this->from = from;
             this->to = to;
             this->up = up;
-            this->w = w;
-            this->h = h;
             this->n = n;
             this->f = f;
             this->fovy = fovy;
@@ -42,7 +39,7 @@ namespace SR {
             return ret;
         }
 
-        mat4x4f get_orthographic_matrix() const {
+        mat4x4f get_orthographic_matrix(int w, int h) const {
             mat4x4f ret;
             ret.set_row(0, vec4f(2 / w, 0, 0, 0));
             ret.set_row(1, vec4f(0, 2 / h, 0, 0));
@@ -51,9 +48,8 @@ namespace SR {
             return ret;
         }
 
-        mat4x4f get_perspective_matrix() const {
+        mat4x4f get_perspective_matrix(float aspect) const {
             float fax = 1.0f / (float) std::tan(fovy * 0.5f);
-            float aspect = (float) w / (float) h;
             mat4x4f ret = mat4x4f::zero();
             ret[0][0] = (float) (fax / aspect);
             ret[1][1] = (float) (fax);
@@ -63,7 +59,7 @@ namespace SR {
             return ret;
         }
 
-        vec4f homogenize(const vec4f v) {
+        vec4f homogenize(const vec4f v, int w, int h) {
             vec4f ret;
             float rhw = 1.0f / v.w; // w的倒数
             ret.x = (v.x * rhw + 1.0f) * w * 0.5f;

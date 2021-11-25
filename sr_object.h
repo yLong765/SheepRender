@@ -14,8 +14,8 @@ namespace SR {
             mesh = obj_loader::load(path);
         }
 
-        void render(sr_camera camera) {
-
+        void set_shader(SHADER_TYPE type) {
+            mesh.set_shader(type);
         }
     } object;
 }
