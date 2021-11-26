@@ -20,6 +20,7 @@
 
 // define
 #include "sr_macro.h"
+#include "utility/sr_clock.h"
 
 // math
 #include "math/sr_vector.h"

@@ -297,6 +297,8 @@ namespace SR {
         return ret;
     }
 
+    typedef sr_matix<3, 2, float> mat3x2f;
+    typedef sr_matix<2, 3, float> mat2x3f;
     typedef sr_matix<3, 3, float> mat3x3f;
     typedef sr_matix<4, 3, float> mat4x3f;
     typedef sr_matix<3, 4, float> mat3x4f;

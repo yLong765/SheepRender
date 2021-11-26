@@ -339,6 +339,11 @@ namespace SR {
         return v / vec_magnitude(v);
     }
 
+    template<size_t N, typename T>
+    inline sr_vector<N, T> vec_reflect(const sr_vector<N, T> l, const sr_vector<N, T> n) {
+        return vec_normalize(l - 2 * n * vec_dot(l, n));
+    }
+
     typedef sr_vector<2, float> vec2f;
     typedef sr_vector<3, float> vec3f;
     typedef sr_vector<4, float> vec4f;

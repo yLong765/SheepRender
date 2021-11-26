@@ -5,10 +5,10 @@ using namespace SR;
 int width = 800, height = 600;
 
 int main() {
-    screen screen = create_screen(width, height, "sheep render");
-    camera camera(vec3f(0, 2, -3.5f), vec3f::zero(), vec3f::up());
+    screen screen = create_screen(width, height, "Sheep Render");
+    camera camera(vec3f(0, 2, -4.0f), vec3f::zero(), vec3f::up());
     light light({1, 1, 1}, {1, 2, 1});
-    object obj("../model/plane.obj");
+    object obj("../model/shape.obj");
     obj.set_shader(PHONG_SHADER);
     texture_2d texture(width, height);
     render render(&texture, &camera, &light);
@@ -16,9 +16,6 @@ int main() {
     vec2f prev_mouse_point;
     vec2f mouse_change = vec2f(0, 0);
     bool first = true;
-    float fps = 0.0f;
-    clock_t cur_clock = clock();
-    clock_t pre_clock = clock();
 
     while (screen_exit == 0) {
         keys[VK_MOUSEWHEELUP & 511] = 0;
@@ -46,6 +43,8 @@ int main() {
         obj.transform.euler.x += mouse_change.y * 0.2f;
         obj.transform.euler.y += mouse_change.x * 0.2f;
 
+        sr_clock::begin();
+
         render.clear_color(color(0.0f, 0.0f, 0.0f));
         render.clear_z_buffer();
 
@@ -58,15 +57,11 @@ int main() {
         screen.set_buffer(&texture);
         screen.update_hdc();
 
-        // 计算fps
-        cur_clock = clock();
-        double detailTime = (double) (cur_clock - pre_clock) / CLOCKS_PER_SEC;
-        pre_clock = cur_clock;
-
-        std::string title = "FPS: " + std::to_string((int) (1000 / (detailTime * 1000)));
-
-        screen.set_title(title.c_str());
-        Sleep(1);
+        double detailTime = sr_clock::end();
+        char *title_char = new char[40];
+        sprintf(title_char, "Sheep Render  FPS: %d  %.0lf ms", (int) (1 / detailTime), detailTime * 1000);
+        screen.set_title(title_char);
+        //Sleep(1);
     }
 
     return 0;

@@ -46,16 +46,32 @@ namespace SR {
                 } else if (!line.compare(0, 2, "f ")) {
                     std::vector<vec3f> d_f;
                     vec3f tmp;
+                    bool has_v = !d_v.empty();
+                    bool has_vt = !d_vt.empty();
+                    bool has_vn = !d_vn.empty();
                     iss >> trash;
-                    while (iss >> tmp[0] >> trash >> tmp[1] >> trash >> tmp[2]) {
-                        for (int i = 0; i < 3; i++) tmp[i]--; // in wavefront obj all indices start at 1, not zero
+                    while (iss) {
+                        if (has_v) {
+                            iss >> tmp[0];
+                            tmp[0]--;
+                        }
+                        iss >> trash;
+                        if (has_vt) {
+                            iss >> tmp[1];
+                            tmp[1]--;
+                        }
+                        iss >> trash;
+                        if (has_vn) {
+                            iss >> tmp[2];
+                            tmp[2]--;
+                        }
                         d_f.push_back(tmp);
                     }
                     if (d_f.size() == 3) {
                         for (int i = 0; i < 3; i++) {
-                            vertices.push_back(d_v[d_f[i][0]]);
-                            uv.push_back(d_vt[d_f[i][1]]);
-                            normals.push_back(d_vn[d_f[i][2]]);
+                            if (has_v) vertices.push_back(d_v[d_f[i][0]]);
+                            if (has_vt) uv.push_back(d_vt[d_f[i][1]]);
+                            if (has_vn) normals.push_back(d_vn[d_f[i][2]]);
                             triangles.push_back(d_f_count);
                             d_f_count++;
                         }
@@ -67,9 +83,9 @@ namespace SR {
                         triangles.push_back(d_f_count + 3);
                         triangles.push_back(d_f_count);
                         for (int i = 0; i < 4; i++) {
-                            vertices.push_back(d_v[d_f[i][0]]);
-                            uv.push_back(d_vt[d_f[i][1]]);
-                            normals.push_back(d_vn[d_f[i][2]]);
+                            if (has_v) vertices.push_back(d_v[d_f[i][0]]);
+                            if (has_vt) uv.push_back(d_vt[d_f[i][1]]);
+                            if (has_vn) normals.push_back(d_vn[d_f[i][2]]);
                             d_f_count++;
                         }
                     }

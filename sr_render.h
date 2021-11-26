@@ -298,6 +298,7 @@ namespace SR {
 
                         color color;
                         if (!shader->frag(in, color)) continue;
+                        // color.c = vec4f(1,1,1,1) * z_depth;
                         draw_pixel(x, y, color);
                     }
                 }
