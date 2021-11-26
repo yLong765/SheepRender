@@ -50,21 +50,11 @@ namespace SR {
                     bool has_vt = !d_vt.empty();
                     bool has_vn = !d_vn.empty();
                     iss >> trash;
-                    while (iss) {
-                        if (has_v) {
-                            iss >> tmp[0];
-                            tmp[0]--;
-                        }
+                    while (iss >> tmp[0] >> trash) {
+                        if (has_vt) iss >> tmp[1];
                         iss >> trash;
-                        if (has_vt) {
-                            iss >> tmp[1];
-                            tmp[1]--;
-                        }
-                        iss >> trash;
-                        if (has_vn) {
-                            iss >> tmp[2];
-                            tmp[2]--;
-                        }
+                        if (has_vn) iss >> tmp[2];
+                        for (int i = 0; i < 3; tmp[i]--, i++);
                         d_f.push_back(tmp);
                     }
                     if (d_f.size() == 3) {
