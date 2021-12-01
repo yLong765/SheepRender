@@ -324,21 +324,25 @@ namespace SR {
         return {lv.y * rv.z - lv.z * rv.y, lv.z * rv.x - lv.x * rv.z, lv.x * rv.y - lv.y * rv.x, lv.w};
     }
 
+    // 向量距离平方
     template<size_t N, typename T>
     inline T vec_sqr_magnitude(const sr_vector<N, T> v) {
         return vec_dot(v, v);
     }
 
+    // 向量长度
     template<size_t N, typename T>
     inline T vec_magnitude(const sr_vector<N, T> v) {
         return std::sqrt(vec_sqr_magnitude(v));
     }
 
+    // 单位化向量
     template<size_t N, typename T>
     inline sr_vector<N, T> vec_normalize(const sr_vector<N, T> v) {
         return v / vec_magnitude(v);
     }
 
+    // 反射向量
     template<size_t N, typename T>
     inline sr_vector<N, T> vec_reflect(const sr_vector<N, T> l, const sr_vector<N, T> n) {
         return vec_normalize(l - 2 * n * vec_dot(l, n));

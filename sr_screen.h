@@ -12,6 +12,7 @@ namespace SR {
     static int keys[512];
     static int screen_exit;
 
+    // 基于Windows的窗口类
     typedef struct sr_screen {
         WNDCLASS wc;
         HWND handle;
@@ -20,6 +21,7 @@ namespace SR {
         HDC memory_dc;
         UINT *frame_buffer;
 
+        // 设置缓冲buffer颜色
         void set_buffer(sr_texture_2d *texture) const {
             int pixel_count = width * height;
             for (int i = 0; i < pixel_count; i++) {
@@ -27,12 +29,14 @@ namespace SR {
             }
         }
 
+        // 更新缓冲
         void update_hdc() const {
             HDC hDC = GetDC(handle);
             BitBlt(hDC, 0, 0, width, height, memory_dc, 0, 0, SRCCOPY);
             ReleaseDC(handle, hDC);
         }
 
+        // 响应消息
         void dispatch() const {
             MSG msg;
             GetMessage(&msg, nullptr, 0, 0);
@@ -40,6 +44,7 @@ namespace SR {
             DispatchMessage(&msg);
         }
 
+        // 获取鼠标位置
         vec2f get_mouse_point() const {
             POINT point;
             GetCursorPos(&point);
@@ -47,11 +52,13 @@ namespace SR {
             return vec2f{(float) point.x, (float) point.y};
         }
 
-        void set_title(const char *title) {
+        // 设置标题
+        void set_title(const char *title) const {
             SetWindowTextA(handle, title);
         }
     } screen;
 
+    // 事件响应类
     static LRESULT CALLBACK event_screen(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         switch (msg) {
             case WM_CLOSE:
@@ -88,6 +95,7 @@ namespace SR {
         return 0;
     }
 
+    // 创建窗口类
     sr_screen create_screen(int width, int height, const char *title) {
         WNDCLASS wc;
         wc.style = CS_BYTEALIGNCLIENT;

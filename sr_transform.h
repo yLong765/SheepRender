@@ -6,15 +6,16 @@
 #define SHEEPRENDER_SR_TRANSFORM_H
 
 namespace SR {
+    // 变换类
     typedef struct sr_transform {
-        vec3f position{};
-        vec3f euler{};
-        vec3f scale{};
+        vec3f position{};   // 世界位置
+        vec3f euler{};      // 欧拉角
+        vec3f scale{};      // 缩放
 
-        mat4x4f world;
+        mat4x4f world;      // model转world矩阵
 
-        bool is_static;
-        bool is_init;
+        bool is_static;     // 是否静态，如果静态不更新world矩阵节省运算
+        bool is_init;       // 是否初始化
 
         sr_transform(bool is_state = false) : is_static(is_static) {
             position = vec3f::zero();
@@ -24,11 +25,13 @@ namespace SR {
             is_init = false;
         }
 
+        // 设置是否静态
         void set_static(bool is_static) {
             this->is_static = is_static;
             this->is_init = false;
         }
 
+        // 获取world矩阵
         mat4x4f get_world_matrix() {
             if (!is_static || !is_init) {
                 mat4x4f scale_mat = mat_scale(scale);
@@ -40,11 +43,10 @@ namespace SR {
             return world;
         }
 
+        // 获取模型前方
         vec3f forward() {
             return (vec3f::forward().xyz1() * get_world_matrix()).xyz();
         }
-
-
     } transform;
 }
 

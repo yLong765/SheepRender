@@ -6,17 +6,19 @@
 #define SHEEPRENDER_SR_MESH_H
 
 namespace SR {
+    // 模型网格
     typedef struct sr_mesh {
-        std::vector<vec3f> vertices;
-        std::vector<vec3f> normals;
-        std::vector<vec2f> uv;
-        std::vector<int> triangles;
-        sr_shader *shader;
+        std::vector<vec3f> vertices;    // 顶点数组
+        std::vector<vec3f> normals;     // 顶点向量数组
+        std::vector<vec2f> uv;          // 顶点贴图UV
+        std::vector<int> triangles;     // 三角形组合
+        sr_shader *shader;              // 所使用shader
 
         sr_mesh() {
             shader = new sr_constant_shader();
         };
 
+        // 设置shader
         void set_shader(SHADER_TYPE type) {
             switch (type) {
                 case CONSTANT_SHADER:

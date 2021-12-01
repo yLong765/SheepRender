@@ -6,6 +6,7 @@
 #define SHEEPRENDER_SR_OBJ_LOADER_H
 
 namespace SR {
+    // obj模型数据加载
     typedef struct sr_obj_loader {
         static sr_mesh load(const char *filename) {
             std::ifstream in;

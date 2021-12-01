@@ -6,6 +6,7 @@
 #define SHEEPRENDER_SR_MATRIX_H
 
 namespace SR {
+    // 矩阵类
     template<size_t ROW, size_t COL, typename T>
     struct sr_matix {
         sr_vector <COL, T> m[ROW] = {{}};
@@ -93,6 +94,7 @@ namespace SR {
         }
     };
 
+    // 输出矩阵
     template<size_t ROW, size_t COL, typename T>
     inline std::ostream &operator<<(std::ostream &out, const sr_matix<ROW, COL, T> &m) {
         for (size_t i = 0; i < ROW; i++) {

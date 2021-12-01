@@ -7,6 +7,7 @@
 
 namespace SR {
     typedef struct sr_color {
+        // color颜色（0~1）
         sr_vector<4, float> c{};
 
         sr_color() = default;
@@ -28,6 +29,8 @@ namespace SR {
             return c[i];
         }
 
+        // 转换到缓冲识别的颜色（0~255）
+        // 每个占8位，一共32位。注意顺序是ARGB
         UINT get_pixel_color() const {
             sr_vector<4, UCHAR> oc{};
             for (size_t i = 0; i < 4; i++) {
@@ -37,6 +40,7 @@ namespace SR {
             return (oc.a << 24) | (oc.r << 16) | (oc.g << 8) | (oc.b);
         }
 
+        // 设置颜色
         void set(float r, float g, float b, float a = 1) {
             c.r = r;
             c.b = b;
@@ -44,6 +48,7 @@ namespace SR {
             c.a = a;
         }
 
+        // 设置颜色
         void set(vec3f v, float a = 1) {
             c.r = v.r;
             c.b = v.b;
@@ -51,6 +56,7 @@ namespace SR {
             c.a = a;
         }
 
+        // 设置颜色
         void set(vec4f v) {
             c.r = v.r;
             c.b = v.b;

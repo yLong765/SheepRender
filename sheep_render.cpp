@@ -49,7 +49,7 @@ int main() {
         render.clear_z_buffer();
 
         //render.draw_axis(obj);
-        render.draw(obj);
+        render.draw_obj(obj);
         //render.draw_wireframe(obj, color(0.5f, 0.5f, 0.5f));
         //render.draw_normal(obj, color(0.0f, 1.0f, 0.0f));
         //render.draw_js_normal(obj, color(0.0f, 0.0f, 1.0f));

@@ -6,12 +6,13 @@
 #define SHEEPRENDER_SR_SHADER_H
 
 namespace SR {
-
+    // shader类型
     enum SHADER_TYPE {
         CONSTANT_SHADER,
         PHONG_SHADER,
     };
 
+    // shader插值所用key
     enum SHADER_KEY_TYPE {
         VERTEX_MODEL = 0,
         VERTEX_CLIP = 1,
@@ -20,6 +21,7 @@ namespace SR {
         VIEW_WORLD = 4,
     };
 
+    // shader插值数据
     typedef struct shader_context {
         std::map<SHADER_KEY_TYPE, float> f;
         std::map<SHADER_KEY_TYPE, vec2f> v2f;
@@ -27,38 +29,28 @@ namespace SR {
         std::map<SHADER_KEY_TYPE, vec4f> v4f;
     } vert_in, vert_out, frag_in;
 
-    struct vary_context {
-        shader_context context[3];
-
-        shader_context &operator[](const size_t i) {
-            assert(i < 3);
-            return context[i];
-        }
-
-        shader_context operator[](const size_t i) const {
-            assert(i < 3);
-            return context[i];
-        }
-    };
-
     typedef struct sr_shader {
-        mat4x4f mat_model;
-        mat4x4f mat_view;
-        mat4x4f mat_proj;
-        vec3f view_pos;
+        mat4x4f mat_model;  // 模型转世界矩阵
+        mat4x4f mat_view;   // 世界转相机矩阵
+        mat4x4f mat_proj;   // 相机转齐次坐标矩阵
+        vec3f view_pos;     // 相机位置
 
+        // 灯光数据
         struct Light {
-            vec3f color;
-            vec3f direction;
-            vec3f position;
+            vec3f color;        // 灯光颜色
+            vec3f direction;    // 灯光方向
+            vec3f position;     // 灯光位置
         } light;
 
         sr_shader() = default;
 
+        // 获取MVP混合矩阵
         mat4x4f get_mvp() const { return mat_model * mat_view * mat_proj; }
 
+        // 顶点处理
         virtual vert_out vert(vert_in in) = 0;
 
+        // 像素处理
         virtual bool frag(frag_in in, sr_color &color) = 0;
     } shader;
 }

@@ -6,14 +6,19 @@
 #define SHEEPRENDER_SR_CAMERA_H
 
 namespace SR {
+    // 相机类
     typedef struct sr_camera {
-        vec3f from{}, to{}, up{};
-        float n, f, fovy;
+        vec3f from{};   // 相机位置
+        vec3f to{};     // 相机观察位置
+        vec3f up{};     // 相机向上的轴(此项目y轴向上)
+        float n;        // 近平面
+        float f;        // 远平面
+        float fovy;     // 视场角
+        vec3f zaxis;    // z轴
+        vec3f xaxis;    // x轴
+        vec3f yaxis;    // y轴
 
-        vec3f zaxis, xaxis, yaxis;
-
-        sr_camera(vec3f from, vec3f to, vec3f up, float n = 1.0f, float f = 500.0f,
-                  float fovy = PI * 0.5f) {
+        sr_camera(vec3f from, vec3f to, vec3f up, float n = 1.0f, float f = 500.0f, float fovy = PI * 0.5f) {
             this->from = from;
             this->to = to;
             this->up = up;
@@ -22,10 +27,12 @@ namespace SR {
             this->fovy = fovy;
         }
 
+        // 获取相机朝向
         vec3f forward() {
             return zaxis;
         }
 
+        // 获取相机观察矩阵
         mat4x4f get_look_at_matrix() {
             zaxis = vec_normalize(to - from);
             xaxis = vec_normalize(vec_cross(up, zaxis));
@@ -39,6 +46,7 @@ namespace SR {
             return ret;
         }
 
+        // 获取相机正交矩阵（变换到齐次坐标）
         mat4x4f get_orthographic_matrix(int w, int h) const {
             mat4x4f ret;
             ret.set_row(0, vec4f(2 / w, 0, 0, 0));
@@ -48,6 +56,7 @@ namespace SR {
             return ret;
         }
 
+        // 获取相机透视矩阵（变换到齐次坐标）
         mat4x4f get_perspective_matrix(float aspect) const {
             float fax = 1.0f / (float) std::tan(fovy * 0.5f);
             mat4x4f ret = mat4x4f::zero();
@@ -59,6 +68,7 @@ namespace SR {
             return ret;
         }
 
+        // 齐次坐标归一化
         vec4f homogenize(const vec4f v, int w, int h) {
             vec4f ret;
             float rhw = 1.0f / v.w; // w的倒数

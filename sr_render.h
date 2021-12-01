@@ -6,14 +6,15 @@
 #define SHEEPRENDER_SR_RENDER_H
 
 namespace SR {
+    // 渲染类
     typedef struct sr_render {
     private:
-        int width;
-        int height;
-        sr_texture_2d *texture;
-        sr_camera *camera;
-        sr_light *light;
-        float *z_buffer;
+        int width;              // 宽
+        int height;             // 高
+        sr_texture_2d *texture; // 颜色写入的贴图
+        sr_camera *camera;      // 相对于哪个相机渲染
+        sr_light *light;        // 相对于哪个灯光渲染
+        float *z_buffer;        // 深度缓冲
 
     public:
         sr_render(sr_texture_2d *texture, sr_camera *camera, sr_light *light) {
@@ -25,20 +26,24 @@ namespace SR {
             this->z_buffer = (float *) malloc(sizeof(float) * width * height);
         }
 
+        // 设置贴图
         void set_texture(sr_texture_2d *texture) {
             this->texture = texture;
             this->width = texture->width;
             this->height = texture->height;
         }
 
+        // 设置相机
         void set_camera(sr_camera *camera) {
             this->camera = camera;
         }
 
+        // 设置灯光
         void set_light(sr_light *light) {
             this->light = light;
         }
 
+        // 清空颜色
         void clear_color(color color) const {
             int pixel_count = width * height;
             for (int i = 0; i < pixel_count; i++) {
@@ -46,6 +51,7 @@ namespace SR {
             }
         }
 
+        // 清空深度缓冲
         void clear_z_buffer() {
             int pixel_count = width * height;
             for (int i = 0; i < pixel_count; i++) {
@@ -53,12 +59,14 @@ namespace SR {
             }
         }
 
+        // 绘制像素点
         void draw_pixel(int x, int y, color color) const {
             if (x >= 0 && x < width && y >= 0 && y < height) {
                 texture->set(x, y, color);
             }
         }
 
+        // 绘制线
         void draw_line(int x1, int y1, int x2, int y2, color color) const {
             int x, y, rem = 0;
             if (x1 == x2 && y1 == y2) {
@@ -102,16 +110,19 @@ namespace SR {
             }
         }
 
+        // 绘制线
         void draw_line(vec4f v1, vec4f v2, color color) const {
             draw_line((int) v1.x, (int) v1.y, (int) v2.x, (int) v2.y, color);
         }
 
+        // 绘制三角形线框
         void draw_triangle_wireframe(vec4f v1, vec4f v2, vec4f v3, color color) const {
             draw_line((int) v1.x, (int) v1.y, (int) v2.x, (int) v2.y, color);
             draw_line((int) v2.x, (int) v2.y, (int) v3.x, (int) v3.y, color);
             draw_line((int) v3.x, (int) v3.y, (int) v1.x, (int) v1.y, color);
         }
 
+        // 绘制三角形线框
         void draw_wireframe(sr_object obj, sr_color color) const {
             mat4x4f model = obj.transform.get_world_matrix();
             mat4x4f view = camera->get_look_at_matrix();
@@ -127,6 +138,7 @@ namespace SR {
             }
         }
 
+        // 绘制法线（有法线的模型）
         void draw_normal(sr_object obj, sr_color color) const {
             mat4x4f model = obj.transform.get_world_matrix();
             mat4x4f view = camera->get_look_at_matrix();
@@ -143,6 +155,7 @@ namespace SR {
             }
         }
 
+        // 绘制法线（无法线的模型，并用叉乘创建垂直与屏幕的法线（此法线渲染的模型都为硬边））
         void draw_js_normal(sr_object obj, sr_color color) const {
             mat4x4f model = obj.transform.get_world_matrix();
             mat4x4f view = camera->get_look_at_matrix();
@@ -170,6 +183,7 @@ namespace SR {
             }
         }
 
+        // 绘制物体的本地坐标轴
         void draw_axis(sr_object obj) const {
             mat4x4f model = obj.transform.get_world_matrix();
             mat4x4f view = camera->get_look_at_matrix();
@@ -200,6 +214,7 @@ namespace SR {
             draw_line(p, fp, color(1, 0, 0));
         }
 
+        // shader上下文初始化
         void shader_context_init(sr_shader *shader) {
             shader->mat_view = camera->get_look_at_matrix();
             shader->mat_proj = camera->get_perspective_matrix(aspect(width, height));
@@ -209,15 +224,17 @@ namespace SR {
             shader->view_pos = camera->from;
         }
 
-        void draw(sr_object obj) {
+        // 绘制模型
+        // 基于重心坐标的方法渲染（慢）
+        void draw_obj(sr_object obj) {
             shader *shader = obj.mesh.shader;
             shader->mat_model = obj.transform.get_world_matrix();
             shader_context_init(shader);
             for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
-                vec4f cpf[3];   // 齐次空间坐标
-                vec2f spf[3];   // 屏幕坐标
-                vec2i spi[3];   // 整数屏幕坐标
-                vert_out out[3];   // 顶点输出
+                vec4f cpf[3];       // 齐次空间坐标
+                vec2f spf[3];       // 屏幕坐标
+                vec2i spi[3];       // 整数屏幕坐标
+                vert_out out[3];    // 顶点输出
 
                 vec2i box_min(width - 1, height - 1);
                 vec2i box_max(0, 0);
