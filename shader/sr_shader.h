@@ -21,9 +21,9 @@ namespace SR {
         VIEW_WORLD = 4,
     };
 
-    // shader插值数据
-    typedef struct shader_context {
-        std::map<SHADER_KEY_TYPE, float> f;
+    // shader顶点插值数据
+    typedef struct vert_data {
+        std::map<SHADER_KEY_TYPE, vec1f> v1f;
         std::map<SHADER_KEY_TYPE, vec2f> v2f;
         std::map<SHADER_KEY_TYPE, vec3f> v3f;
         std::map<SHADER_KEY_TYPE, vec4f> v4f;

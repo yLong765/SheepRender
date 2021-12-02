@@ -26,6 +26,41 @@ namespace SR {
     };
 
     template<typename T>
+    struct sr_vector<1, T> {
+        union {
+            T x;
+            T u;
+            T data[1];
+        };
+
+        inline sr_vector() = default;
+
+        inline sr_vector(T x) : x(x) {}
+
+        template<size_t N>
+        inline sr_vector(const sr_vector<N, T> &v) {
+            assert(N > 0);
+            x = v.x;
+        }
+
+        inline T &operator[](const size_t i) {
+            assert(i < 1);
+            return data[i];
+        }
+
+        inline const T &operator[](const size_t i) const {
+            assert(i < 1);
+            return data[i];
+        }
+
+        inline sr_vector<2, T> x1() const { return {x, 1}; }
+
+        inline sr_vector<3, T> x11() const { return {x, 1, 1}; }
+
+        inline sr_vector<4, T> x111() const { return {x, 1, 1, 1}; }
+    };
+
+    template<typename T>
     struct sr_vector<2, T> {
         union {
             struct {
@@ -348,6 +383,7 @@ namespace SR {
         return vec_normalize(l - 2 * n * vec_dot(l, n));
     }
 
+    typedef sr_vector<1, float> vec1f;
     typedef sr_vector<2, float> vec2f;
     typedef sr_vector<3, float> vec3f;
     typedef sr_vector<4, float> vec4f;

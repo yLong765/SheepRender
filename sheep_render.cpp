@@ -8,7 +8,7 @@ int main() {
     screen screen = create_screen(width, height, "Sheep Render");
     camera camera(vec3f(0, 2, -4.0f), vec3f::zero(), vec3f::up());
     light light({1, 1, 1}, {1, 2, 1});
-    object obj("../model/shape.obj");
+    object obj("../model/cube.obj");
     obj.set_shader(PHONG_SHADER);
     texture_2d texture(width, height);
     render render(&texture, &camera, &light);
@@ -47,12 +47,7 @@ int main() {
 
         render.clear_color(color(0.0f, 0.0f, 0.0f));
         render.clear_z_buffer();
-
-        //render.draw_axis(obj);
         render.draw_obj(obj);
-        //render.draw_wireframe(obj, color(0.5f, 0.5f, 0.5f));
-        //render.draw_normal(obj, color(0.0f, 1.0f, 0.0f));
-        //render.draw_js_normal(obj, color(0.0f, 0.0f, 1.0f));
 
         screen.set_buffer(&texture);
         screen.update_hdc();
@@ -61,7 +56,6 @@ int main() {
         char *title_char = new char[40];
         sprintf(title_char, "Sheep Render  FPS: %d  %.0lf ms", (int) (1 / detailTime), detailTime * 1000);
         screen.set_title(title_char);
-        //Sleep(1);
     }
 
     return 0;

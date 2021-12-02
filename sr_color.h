@@ -8,15 +8,17 @@
 namespace SR {
     typedef struct sr_color {
         // color颜色（0~1）
-        sr_vector<4, float> c{};
+        union {
+            struct {
+                float r, g, b, a;
+            };
+            sr_vector<4, float> c;
+        };
 
         sr_color() = default;
 
         sr_color(float r, float g, float b, float a = 1.0f) {
-            c.r = r;
-            c.g = g;
-            c.b = b;
-            c.a = a;
+            set(r, g, b, a);
         }
 
         float &operator[](const size_t i) {
@@ -42,28 +44,51 @@ namespace SR {
 
         // 设置颜色
         void set(float r, float g, float b, float a = 1) {
-            c.r = r;
-            c.b = b;
-            c.g = g;
-            c.a = a;
+            this->r = r;
+            this->b = b;
+            this->g = g;
+            this->a = a;
+            normalized();
         }
 
         // 设置颜色
         void set(vec3f v, float a = 1) {
-            c.r = v.r;
-            c.b = v.b;
-            c.g = v.g;
-            c.a = a;
+            set(v.r, v.g, v.b, a);
         }
 
         // 设置颜色
         void set(vec4f v) {
-            c.r = v.r;
-            c.b = v.b;
-            c.g = v.g;
-            c.a = v.a;
+            set(v.r, v.g, v.b, v.a);
+        }
+
+        sr_color normalized() {
+            for (int i = 0; i < 4; i++) {
+                c[i] = clamp(c[i], 0.0f, 1.0f);
+            }
+            return *this;
         }
     } color;
+
+    // lc *= x
+    inline sr_color &operator*=(sr_color &lc, float &x) {
+        lc.c *= x;
+        lc.normalized();
+        return lc;
+    }
+
+    // lc * x
+    inline sr_color operator*(sr_color lc, float x) {
+        sr_color ret;
+        ret.c = lc.c * x;
+        return ret.normalized();
+    }
+
+    // x * rc
+    inline sr_color operator*(float x, sr_color rc) {
+        sr_color ret;
+        ret.c = x * rc.c;
+        return ret.normalized();
+    }
 }
 
 #endif //SHEEPRENDER_SR_COLOR_H

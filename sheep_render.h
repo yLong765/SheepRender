@@ -49,7 +49,7 @@
 
 #include "sr_object_mgr.h"
 
-#include "sr_render.h"
+#include "render/sr_render_inc.h"
 
 
 #endif //SHEEPRENDER_SHEEP_RENDER_H

@@ -6,9 +6,17 @@
 #define SHEEPRENDER_SR_RENDER_H
 
 namespace SR {
+    enum RENDER_TYPE {
+        BARYCENTRIC_COORDINATE = 0,
+        EDGE_EQUATION = 1,
+        EDGE_WALKING = 2,
+        // 深度渲染
+        DEPTH_RENDER = 10,
+    };
+
     // 渲染类
     typedef struct sr_render {
-    private:
+    protected:
         int width;              // 宽
         int height;             // 高
         sr_texture_2d *texture; // 颜色写入的贴图
@@ -214,26 +222,74 @@ namespace SR {
             draw_line(p, fp, color(1, 0, 0));
         }
 
-        // shader上下文初始化
-        void shader_context_init(sr_shader *shader) {
+        // 顶点数据插值获得像素数据
+        frag_in interpolation(vert_out out[3], vec3f prop) {
+            frag_in in;
+
+            for (auto &it : out[0].v1f) {
+                SHADER_KEY_TYPE key = it.first;
+                in.v1f[key] = prop.x * out[0].v1f[key] + prop.y * out[1].v1f[key] + prop.z * out[2].v1f[key];
+            }
+
+            for (auto &it : out[0].v2f) {
+                SHADER_KEY_TYPE key = it.first;
+                in.v2f[key] = prop.x * out[0].v2f[key] + prop.y * out[1].v2f[key] + prop.z * out[2].v2f[key];
+            }
+
+            for (auto &it : out[0].v3f) {
+                SHADER_KEY_TYPE key = it.first;
+                in.v3f[key] = prop.x * out[0].v3f[key] + prop.y * out[1].v3f[key] + prop.z * out[2].v3f[key];
+            }
+
+            for (auto &it : out[0].v4f) {
+                SHADER_KEY_TYPE key = it.first;
+                in.v4f[key] = prop.x * out[0].v4f[key] + prop.y * out[1].v4f[key] + prop.z * out[2].v4f[key];
+            }
+
+            return in;
+        }
+
+        // 归一化齐次坐标
+        vec4f to_ndc(vec4f clip_p) {
+            // 1 / w
+            float rhw = 1.0f / clip_p.w;
+            // 归一化到[-1, 1] cvv
+            return clip_p * rhw;
+        }
+
+        // 屏幕坐标
+        vec2f to_screen_f(vec4f ndc_p) {
+            return {(ndc_p.x + 1.0f) * width * 0.5f, (1.0f - ndc_p.y) * height * 0.5f};
+        }
+
+        // 整数屏幕坐标：加0.5的偏移取屏幕像素方格中心对齐
+        vec2i to_screen_i(vec2f screen_pf) {
+            return {(int) (screen_pf.x + 0.5f), (int) (screen_pf.y + 0.5f)};
+        }
+
+        // 三角形外接矩形
+        void box_bound(vec2i &box_min, vec2i &box_max, vec2i screen_pi) const {
+            box_min.x = std::max(0, std::min(box_min.x, screen_pi.x));
+            box_min.y = std::max(0, std::min(box_min.y, screen_pi.y));
+            box_max.x = std::min(width - 1, std::max(box_max.x, screen_pi.x));
+            box_max.y = std::min(height - 1, std::max(box_max.y, screen_pi.y));
+        }
+
+        // 绘制模型
+        // 基于重心坐标的方法渲染（慢）
+        void draw_obj_barycentric_coordinate(sr_object obj) {
+            shader *shader = obj.mesh.shader;
+            shader->mat_model = obj.transform.get_world_matrix();
             shader->mat_view = camera->get_look_at_matrix();
             shader->mat_proj = camera->get_perspective_matrix(aspect(width, height));
             shader->light.color = light->color.c;
             shader->light.direction = light->direction;
             shader->light.position = light->position;
             shader->view_pos = camera->from;
-        }
-
-        // 绘制模型
-        // 基于重心坐标的方法渲染（慢）
-        void draw_obj(sr_object obj) {
-            shader *shader = obj.mesh.shader;
-            shader->mat_model = obj.transform.get_world_matrix();
-            shader_context_init(shader);
             for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
-                vec4f cpf[3];       // 齐次空间坐标
-                vec2f spf[3];       // 屏幕坐标
-                vec2i spi[3];       // 整数屏幕坐标
+                vec4f ndc_p[3];     // 归一化设备坐标
+                vec2f screen_pf[3]; // 屏幕坐标
+                vec2i screen_pi[3]; // 整数屏幕坐标
                 vert_out out[3];    // 顶点输出
 
                 vec2i box_min(width - 1, height - 1);
@@ -245,7 +301,60 @@ namespace SR {
                     in.v3f[VERTEX_MODEL] = obj.mesh.vertices[id];
                     in.v3f[NORMAL_MODEL] = obj.mesh.normals[id];
                     out[j] = shader->vert(in);
-                    cpf[j] = out[j].v4f[VERTEX_CLIP];
+                    ndc_p[j] = to_ndc(out[j].v4f[VERTEX_CLIP]);
+                    screen_pf[j] = to_screen_f(ndc_p[j]);
+                    screen_pi[j] = to_screen_i(screen_pf[j]);
+                    box_bound(box_min, box_max, screen_pi[j]);
+                }
+
+                // 判断三角形朝向
+                vec4f v01 = ndc_p[1] - ndc_p[0];
+                vec4f v02 = ndc_p[2] - ndc_p[0];
+                vec4f normal = vec_cross(v01, v02);
+
+                // 左手坐标系Z轴朝相机观察方向，z > 0说明与相机朝向方向相同所以舍去不绘制
+                if (normal.z > 0.0f) continue;
+
+                for (int x = box_min.x; x < box_max.x; x++) {
+                    for (int y = box_min.y; y < box_max.y; y++) {
+                        // 屏幕重心坐标比例
+                        vec3f bc_s = math::barycentric(screen_pi, vec2i(x, y));
+                        if (bc_s.x < 0 || bc_s.y < 0 || bc_s.z < 0) continue;
+
+                        // 屏幕坐标系中的重心坐标无法为透视变换前的顶点坐标组插值。因为透视变换破坏了深度Z的线性关系
+                        // 所以要将屏幕的重心坐标比例转换到齐次坐标系得重心坐标比例
+                        vec3f bc_c(bc_s.x / ndc_p[0].w, bc_s.y / ndc_p[1].w, bc_s.z / ndc_p[2].w);
+                        bc_c = bc_c / (bc_c.x + bc_c.y + bc_c.z);
+                        float z_depth = bc_c.x * ndc_p[0].z + bc_c.y * ndc_p[1].z + bc_c.z * ndc_p[2].z;
+                        // 左手坐标系Z轴朝相机观察方向，深度由小变大（与OpenGL相反）
+                        if (z_depth > z_buffer[x + y * width]) continue;
+                        z_buffer[x + y * width] = z_depth;
+
+                        // 插值
+                        frag_in in = interpolation(out, bc_c);
+
+                        color color;
+                        if (!shader->frag(in, color)) continue;
+                        draw_pixel(x, y, color);
+                    }
+                }
+            }
+        }
+
+        void draw_depth(sr_object obj) {
+            mat4x4f mvp = obj.transform.get_world_matrix() * camera->get_look_at_matrix() *
+                          camera->get_perspective_matrix(aspect(width, height));
+            for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
+                vec4f cpf[3];       // 齐次空间坐标
+                vec2f spf[3];       // 屏幕坐标
+                vec2i spi[3];       // 整数屏幕坐标
+
+                vec2i box_min(width - 1, height - 1);
+                vec2i box_max(0, 0);
+
+                for (int j = 0; j < 3; j++) {
+                    int id = obj.mesh.triangles[i + j];
+                    cpf[j] = obj.mesh.vertices[id].xyz1() * mvp;
 
                     // 1 / w
                     float rhw = 1.0f / cpf[j].w;
@@ -290,37 +399,21 @@ namespace SR {
                         if (z_depth > z_buffer[x + y * width]) continue;
                         z_buffer[x + y * width] = z_depth;
 
-                        // 插值
-                        frag_in in;
-
-                        for (auto &it : out[0].f) {
-                            SHADER_KEY_TYPE key = it.first;
-                            in.f[key] = bc_c.x * out[0].f[key] + bc_c.y * out[1].f[key] + bc_c.z * out[2].f[key];
-                        }
-
-                        for (auto &it : out[0].v2f) {
-                            SHADER_KEY_TYPE key = it.first;
-                            in.v2f[key] = bc_c.x * out[0].v2f[key] + bc_c.y * out[1].v2f[key] + bc_c.z * out[2].v2f[key];
-                        }
-
-                        for (auto &it : out[0].v3f) {
-                            SHADER_KEY_TYPE key = it.first;
-                            in.v3f[key] = bc_c.x * out[0].v3f[key] + bc_c.y * out[1].v3f[key] + bc_c.z * out[2].v3f[key];
-                        }
-
-                        for (auto &it : out[0].v4f) {
-                            SHADER_KEY_TYPE key = it.first;
-                            in.v4f[key] = bc_c.x * out[0].v4f[key] + bc_c.y * out[1].v4f[key] + bc_c.z * out[2].v4f[key];
-                        }
-
-                        color color;
-                        if (!shader->frag(in, color)) continue;
-                        // color.c = vec4f(1,1,1,1) * z_depth;
+                        color color(1, 1, 1, 1);
+                        color *= z_depth;
                         draw_pixel(x, y, color);
                     }
                 }
             }
         }
+
+        void draw_obj(sr_object obj, RENDER_TYPE type = BARYCENTRIC_COORDINATE);
+
+        virtual void draw() = 0;
+
+        virtual void vertex(int id, int j) = 0;
+
+        virtual void fragment() = 0;
     } render;
 }
 
