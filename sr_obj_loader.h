@@ -8,7 +8,7 @@
 namespace SR {
     // obj模型数据加载
     typedef struct sr_obj_loader {
-        static sr_mesh load(const char *filename) {
+        static sr_mesh *load(const char *filename) {
             std::ifstream in;
             in.open(filename, std::ifstream::in);
             if (!in.is_open()) {
@@ -82,11 +82,11 @@ namespace SR {
                     }
                 }
             }
-            sr_mesh mesh;
-            mesh.vertices = vertices;
-            mesh.uv = uv;
-            mesh.normals = normals;
-            mesh.triangles = triangles;
+            sr_mesh *mesh = new sr_mesh();
+            mesh->vertices = vertices;
+            mesh->uv = uv;
+            mesh->normals = normals;
+            mesh->triangles = triangles;
             printf("model loading finish\n");
             return mesh;
         }

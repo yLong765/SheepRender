@@ -96,7 +96,7 @@ namespace SR {
     }
 
     // 创建窗口类
-    sr_screen create_screen(int width, int height, const char *title) {
+    sr_screen *create_screen(int width, int height, const char *title) {
         WNDCLASS wc;
         wc.style = CS_BYTEALIGNCLIENT;
         wc.lpfnWndProc = event_screen;
@@ -155,15 +155,15 @@ namespace SR {
 
         memset(keys, 0, sizeof(int) * 512);
 
-        sr_screen screen{};
-        screen.wc = wc;
-        screen.handle = handle;
-        screen.width = width;
-        screen.height = height;
-        screen.memory_dc = memory_dc;
-        screen.frame_buffer = (UINT *) ptr;
+        sr_screen *screen = new sr_screen();
+        screen->wc = wc;
+        screen->handle = handle;
+        screen->width = width;
+        screen->height = height;
+        screen->memory_dc = memory_dc;
+        screen->frame_buffer = (UINT *) ptr;
 
-        memset(screen.frame_buffer, 0, width * height * sizeof(UINT));
+        memset(screen->frame_buffer, 0, width * height * sizeof(UINT));
 
         return screen;
     }

@@ -7,12 +7,18 @@
 
 namespace SR {
     typedef struct sr_object_mgr {
-        std::vector<sr_object> objects;
+        static std::vector<sr_object *> objects;
 
-        void load_model(const char *path) {
-            objects.emplace_back(path);
+        static void load_model(const char *path) {
+            objects.push_back(new sr_object(path));
+        }
+
+        static std::vector<sr_object *> get_objs() {
+            return objects;
         }
     } object_mgr;
+
+    std::vector<sr_object *> sr_object_mgr::objects;
 }
 
 #endif //SHEEPRENDER_SR_OBJECT_MGR_H

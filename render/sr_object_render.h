@@ -14,19 +14,14 @@ namespace SR {
         vert_out out[3];    // 顶点输出
         vec2i box_min;
         vec2i box_max;
-        sr_object *obj;
         sr_shader *shader;
     public:
         sr_object_render(sr_texture_2d *texture, sr_camera *camera, sr_light *light) : sr_render(texture, camera,
                                                                                                  light) {}
 
-        void set_object(sr_object *obj) {
-            this->obj = obj;
-        }
-
         // shader上下文初始化
-        void shader_context_init() {
-            shader->mat_model = obj.transform.get_world_matrix();
+        void shader_context_init(sr_object *obj) {
+            shader->mat_model = obj->transform.get_world_matrix();
             shader->mat_view = camera->get_look_at_matrix();
             shader->mat_proj = camera->get_perspective_matrix(math::aspect(width, height));
             shader->light.color = light->color.c;
@@ -59,10 +54,10 @@ namespace SR {
         }
 
         // 顶点计算
-        void vertex(int id, int vert_id) override {
+        void vertex(int id, int vert_id, sr_object *obj) override {
             vert_in in;
-            in.v3f[VERTEX_MODEL] = obj.mesh.vertices[id];
-            in.v3f[NORMAL_MODEL] = obj.mesh.normals[id];
+            in.v3f[VERTEX_MODEL] = obj->mesh->vertices[id];
+            in.v3f[NORMAL_MODEL] = obj->mesh->normals[id];
             out[vert_id] = shader->vert(in);
             ndc_p[vert_id] = to_ndc(out[vert_id].v4f[VERTEX_CLIP]);
             screen_pf[vert_id] = to_screen_f(ndc_p[vert_id]);
@@ -99,11 +94,17 @@ namespace SR {
         // 绘制模型
         // 基于重心坐标的方法渲染（慢）
         void draw() override {
-            shader_context_init();
-            for (int i = 0; i < obj.mesh.triangles.size(); i++) {
-                vertex(obj.mesh.triangles[i], i % 3);
-                // if (!triangles_direction()) continue;
-                fragment();
+            std::vector<sr_object *> objs = object_mgr::get_objs(); // 临时
+            for (auto &obj : objs) {
+                shader = obj->mesh->shader;
+                shader_context_init(obj);
+                for (int i = 0; i < obj->mesh->triangles.size(); i += 3) {
+                    for (int j = 0; j < 3; j++) {
+                        vertex(obj->mesh->triangles[i + j], j, obj);
+                    }
+                    if (!triangles_direction()) continue;
+                    fragment();
+                }
             }
         }
     } object_render;

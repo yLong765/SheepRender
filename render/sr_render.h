@@ -14,6 +14,8 @@ namespace SR {
         DEPTH_RENDER = 10,
     };
 
+    struct sr_object_render;
+
     // 渲染类
     typedef struct sr_render {
     protected:
@@ -136,11 +138,11 @@ namespace SR {
             mat4x4f view = camera->get_look_at_matrix();
             mat4x4f projection = camera->get_perspective_matrix(math::aspect(width, height));
             mat4x4f mvp = model * view * projection;
-            for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
+            for (int i = 0; i < obj.mesh->triangles.size(); i += 3) {
                 vec4f screen_point[3];
                 for (int j = 0; j < 3; j++) {
-                    int id = obj.mesh.triangles[i + j];
-                    screen_point[j] = camera->homogenize(obj.mesh.vertices[id].xyz1() * mvp, width, height);
+                    int id = obj.mesh->triangles[i + j];
+                    screen_point[j] = camera->homogenize(obj.mesh->vertices[id].xyz1() * mvp, width, height);
                 }
                 draw_triangle_wireframe(screen_point[0], screen_point[1], screen_point[2], color);
             }
@@ -152,12 +154,12 @@ namespace SR {
             mat4x4f view = camera->get_look_at_matrix();
             mat4x4f projection = camera->get_perspective_matrix(math::aspect(width, height));
             mat4x4f mvp = model * view * projection;
-            for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
+            for (int i = 0; i < obj.mesh->triangles.size(); i += 3) {
                 for (int j = 0; j < 3; j++) {
-                    int id = obj.mesh.triangles[i + j];
-                    vec4f screen_point = camera->homogenize(obj.mesh.vertices[id].xyz1() * mvp, width, height);
+                    int id = obj.mesh->triangles[i + j];
+                    vec4f screen_point = camera->homogenize(obj.mesh->vertices[id].xyz1() * mvp, width, height);
                     vec4f screen_normal = camera->homogenize(
-                            (obj.mesh.vertices[id] + obj.mesh.normals[id]).xyz1() * mvp, width, height);
+                            (obj.mesh->vertices[id] + obj.mesh->normals[id]).xyz1() * mvp, width, height);
                     draw_line(screen_point, screen_normal, color);
                 }
             }
@@ -169,13 +171,13 @@ namespace SR {
             mat4x4f view = camera->get_look_at_matrix();
             mat4x4f projection = camera->get_perspective_matrix(math::aspect(width, height));
             mat4x4f mvp = model * view * projection;
-            for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
+            for (int i = 0; i < obj.mesh->triangles.size(); i += 3) {
                 vec4f mpf[3];
                 vec4f cpf[3];
                 vec4f spf[3];
                 for (int j = 0; j < 3; j++) {
-                    int id = obj.mesh.triangles[i + j];
-                    mpf[j] = obj.mesh.vertices[id].xyz1();
+                    int id = obj.mesh->triangles[i + j];
+                    mpf[j] = obj.mesh->vertices[id].xyz1();
                     cpf[j] = mpf[j] * mvp;
                     spf[j] = camera->homogenize(cpf[j], width, height);
                 }
@@ -278,7 +280,7 @@ namespace SR {
         // 绘制模型
         // 基于重心坐标的方法渲染（慢）
         void draw_obj_barycentric_coordinate(sr_object obj) {
-            shader *shader = obj.mesh.shader;
+            shader *shader = obj.mesh->shader;
             shader->mat_model = obj.transform.get_world_matrix();
             shader->mat_view = camera->get_look_at_matrix();
             shader->mat_proj = camera->get_perspective_matrix(math::aspect(width, height));
@@ -286,7 +288,7 @@ namespace SR {
             shader->light.direction = light->direction;
             shader->light.position = light->position;
             shader->view_pos = camera->from;
-            for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
+            for (int i = 0; i < obj.mesh->triangles.size(); i += 3) {
                 vec4f ndc_p[3];     // 归一化设备坐标
                 vec2f screen_pf[3]; // 屏幕坐标
                 vec2i screen_pi[3]; // 整数屏幕坐标
@@ -296,10 +298,10 @@ namespace SR {
                 vec2i box_max(0, 0);
 
                 for (int j = 0; j < 3; j++) {
-                    int id = obj.mesh.triangles[i + j];
+                    int id = obj.mesh->triangles[i + j];
                     vert_in in;
-                    in.v3f[VERTEX_MODEL] = obj.mesh.vertices[id];
-                    in.v3f[NORMAL_MODEL] = obj.mesh.normals[id];
+                    in.v3f[VERTEX_MODEL] = obj.mesh->vertices[id];
+                    in.v3f[NORMAL_MODEL] = obj.mesh->normals[id];
                     out[j] = shader->vert(in);
                     ndc_p[j] = to_ndc(out[j].v4f[VERTEX_CLIP]);
                     screen_pf[j] = to_screen_f(ndc_p[j]);
@@ -344,7 +346,7 @@ namespace SR {
         void draw_depth(sr_object obj) {
             mat4x4f mvp = obj.transform.get_world_matrix() * camera->get_look_at_matrix() *
                           camera->get_perspective_matrix(math::aspect(width, height));
-            for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
+            for (int i = 0; i < obj.mesh->triangles.size(); i += 3) {
                 vec4f cpf[3];       // 齐次空间坐标
                 vec2f spf[3];       // 屏幕坐标
                 vec2i spi[3];       // 整数屏幕坐标
@@ -353,8 +355,8 @@ namespace SR {
                 vec2i box_max(0, 0);
 
                 for (int j = 0; j < 3; j++) {
-                    int id = obj.mesh.triangles[i + j];
-                    cpf[j] = obj.mesh.vertices[id].xyz1() * mvp;
+                    int id = obj.mesh->triangles[i + j];
+                    cpf[j] = obj.mesh->vertices[id].xyz1() * mvp;
 
                     // 1 / w
                     float rhw = 1.0f / cpf[j].w;
@@ -407,11 +409,9 @@ namespace SR {
             }
         }
 
-        void draw_obj(sr_object obj, RENDER_TYPE type = BARYCENTRIC_COORDINATE);
-
         virtual void draw() = 0;
 
-        virtual void vertex(int id, int j) = 0;
+        virtual void vertex(int id, int j, sr_object *obj) = 0;
 
         virtual void fragment() = 0;
     } render;

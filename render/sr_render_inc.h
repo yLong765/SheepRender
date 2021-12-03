@@ -9,19 +9,18 @@
 #include "sr_object_render.h"
 
 namespace SR {
-    void sr_render::draw_obj(sr_object obj, RENDER_TYPE type) {
+    sr_render *create_render(sr_texture_2d *texture, sr_camera *camera, sr_light *light,
+                             RENDER_TYPE type = BARYCENTRIC_COORDINATE) {
         switch (type) {
             case BARYCENTRIC_COORDINATE:
-                auto render = new sr_object_render(obj);
-                render->draw();
+                return new sr_object_render(texture, camera, light);
+            case EDGE_EQUATION:
                 break;
-                case EDGE_EQUATION:
-                    break;
-                case EDGE_WALKING:
-                    break;
-                case DEPTH_RENDER:
-                    //draw_depth(obj);
-                    break;
+            case EDGE_WALKING:
+                break;
+            case DEPTH_RENDER:
+                //draw_depth(obj);
+                break;
         }
     }
 }

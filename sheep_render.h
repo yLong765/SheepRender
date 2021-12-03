@@ -48,6 +48,8 @@
 
 #include "sr_object_mgr.h"
 
+#include "sr_input.h"
+
 #include "render/sr_render_inc.h"
 
 
