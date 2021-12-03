@@ -25,7 +25,7 @@ namespace SR {
         void set_buffer(sr_texture_2d *texture) const {
             int pixel_count = width * height;
             for (int i = 0; i < pixel_count; i++) {
-                frame_buffer[i] = (*texture)[i].get_pixel_color();
+                frame_buffer[i] = texture->get_pixel(i);
             }
         }
 

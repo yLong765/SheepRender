@@ -19,6 +19,7 @@
 #include <ctime>
 
 // utility
+#include "utility/sr_singleton.h"
 #include "utility/sr_clock.h"
 
 // math

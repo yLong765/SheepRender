@@ -20,7 +20,7 @@ namespace SR {
         std::vector<sr_color> colors;   // 颜色
 
         sr_texture_2d(int width, int height, TEXTURE_2D_TYPE type = TEX_RGB) : width(width), height(height) {
-            colors = std::vector<color>(width * height, color(0, 0, 0, 1));
+            colors = std::vector<sr_color>(width * height, sr_color(0, 0, 0, 1));
             this->type = type;
         }
 
@@ -32,6 +32,14 @@ namespace SR {
         sr_color operator[](const int i) const {
             assert(i >= 0 && i < colors.size());
             return colors[i];
+        }
+
+        UINT get_pixel(int i) {
+            return colors[i].get_pixel_color();
+        }
+
+        UINT get_pixel(int x, int y) {
+            return colors[x + y * width].get_pixel_color();
         }
 
         // 设置位置的颜色（一维）

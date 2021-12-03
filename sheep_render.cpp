@@ -13,7 +13,9 @@ int main() {
     object_mgr::load_model("../model/cube.obj");
     std::vector<sr_object *> objs = object_mgr::get_objs();
     object *obj = objs[0];
-    render *render = create_render(&texture, &camera, &light);
+    render::instance().set_texture(&texture);
+    render::instance().set_camera(&camera);
+    render::instance().set_light(&light);
 
     while (screen_exit == 0) {
         input.update();
@@ -23,16 +25,16 @@ int main() {
         obj->transform.euler.x += change.y * 0.2f;
         obj->transform.euler.y += change.x * 0.2f;
 
-        sr_clock::begin();
+        sr_clock::instance().begin();
 
-        render->clear_color(color(0.0f, 0.0f, 0.0f));
-        render->clear_z_buffer();
-        render->draw();
+        render::instance().clear_color(color(0.0f, 0.0f, 0.0f));
+        render::instance().clear_z_buffer();
+        render::instance().draw_mesh(DEPTH_RENDER);
 
         screen->set_buffer(&texture);
         screen->update_hdc();
 
-        double detailTime = sr_clock::end();
+        double detailTime = sr_clock::instance().end();
         char *title_char = new char[40];
         sprintf(title_char, "Sheep Render  FPS: %d  %.0lf ms", (int) (1 / detailTime), detailTime * 1000);
         screen->set_title(title_char);

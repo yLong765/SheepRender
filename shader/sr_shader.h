@@ -27,6 +27,8 @@ namespace SR {
         std::map<SHADER_KEY_TYPE, vec2f> v2f;
         std::map<SHADER_KEY_TYPE, vec3f> v3f;
         std::map<SHADER_KEY_TYPE, vec4f> v4f;
+
+
     } vert_in, vert_out, frag_in;
 
     typedef struct sr_shader {
