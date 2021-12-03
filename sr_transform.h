@@ -35,7 +35,8 @@ namespace SR {
         mat4x4f get_world_matrix() {
             if (!is_static || !is_init) {
                 mat4x4f scale_mat = mat_scale(scale);
-                mat4x4f rotation_mat = mat_rotation(deg2rad(euler.x), deg2rad(euler.y), deg2rad(euler.z));
+                mat4x4f rotation_mat = mat_rotation(math::deg2rad(euler.x), math::deg2rad(euler.y),
+                                                    math::deg2rad(euler.z));
                 mat4x4f translation_mat = mat_translation(position);
                 world = scale_mat * rotation_mat * translation_mat;
                 is_init = true;

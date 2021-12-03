@@ -18,8 +18,7 @@
 #include <windows.h>
 #include <ctime>
 
-// define
-#include "sr_macro.h"
+// utility
 #include "utility/sr_clock.h"
 
 // math

@@ -26,7 +26,32 @@ namespace SR {
         static vec3f barycentric(const vec2i *Ps, const vec2i P) {
             return barycentric(Ps[0], Ps[1], Ps[2], P);
         }
+
+        // PI数据
+        static float pi;
+
+        // 弧度转角度
+        static float deg2rad(float deg) {
+            return (pi / 180) * deg;
+        }
+
+        // x控制在min和max之间
+        static float clamp(float x, float min, float max) {
+            return (x < min) ? min : ((x > max) ? max : x);
+        }
+
+        // x控制在min和max之间
+        static int clamp(int x, int min, int max) {
+            return (x < min) ? min : ((x > max) ? max : x);
+        }
+
+        // 屏幕宽高比
+        static float aspect(int w, int h) {
+            return (float) w / (float) h;
+        }
     } math;
+
+    float sr_math::pi = 3.1415926f;
 }
 
 #endif //SHEEPRENDER_SR_MATH_H

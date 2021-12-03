@@ -28,7 +28,7 @@ namespace SR {
         void shader_context_init() {
             shader->mat_model = obj.transform.get_world_matrix();
             shader->mat_view = camera->get_look_at_matrix();
-            shader->mat_proj = camera->get_perspective_matrix(aspect(width, height));
+            shader->mat_proj = camera->get_perspective_matrix(math::aspect(width, height));
             shader->light.color = light->color.c;
             shader->light.direction = light->direction;
             shader->light.position = light->position;
@@ -59,15 +59,15 @@ namespace SR {
         }
 
         // 顶点计算
-        void vertex(int id, int j) override {
+        void vertex(int id, int vert_id) override {
             vert_in in;
             in.v3f[VERTEX_MODEL] = obj.mesh.vertices[id];
             in.v3f[NORMAL_MODEL] = obj.mesh.normals[id];
-            out[j] = shader->vert(in);
-            ndc_p[j] = to_ndc(out[j].v4f[VERTEX_CLIP]);
-            screen_pf[j] = to_screen_f(ndc_p[j]);
-            screen_pi[j] = to_screen_i(screen_pf[j]);
-            box_bound(box_min, box_max, screen_pi[j]);
+            out[vert_id] = shader->vert(in);
+            ndc_p[vert_id] = to_ndc(out[vert_id].v4f[VERTEX_CLIP]);
+            screen_pf[vert_id] = to_screen_f(ndc_p[vert_id]);
+            screen_pi[vert_id] = to_screen_i(screen_pf[vert_id]);
+            box_bound(box_min, box_max, screen_pi[vert_id]);
         }
 
         // 像素计算

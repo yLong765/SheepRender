@@ -18,7 +18,7 @@ namespace SR {
         vec3f xaxis;    // x轴
         vec3f yaxis;    // y轴
 
-        sr_camera(vec3f from, vec3f to, vec3f up, float n = 1.0f, float f = 500.0f, float fovy = PI * 0.5f) {
+        sr_camera(vec3f from, vec3f to, vec3f up, float n = 1.0f, float f = 500.0f, float fovy = math::pi * 0.5f) {
             this->from = from;
             this->to = to;
             this->up = up;

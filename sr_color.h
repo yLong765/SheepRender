@@ -37,7 +37,7 @@ namespace SR {
             sr_vector<4, UCHAR> oc{};
             for (size_t i = 0; i < 4; i++) {
                 oc[i] = c[i] * 255.0f;
-                oc[i] = clamp(oc[i], 0, 255);
+                oc[i] = math::clamp(oc[i], 0, 255);
             }
             return (oc.a << 24) | (oc.r << 16) | (oc.g << 8) | (oc.b);
         }
@@ -63,7 +63,7 @@ namespace SR {
 
         sr_color normalized() {
             for (int i = 0; i < 4; i++) {
-                c[i] = clamp(c[i], 0.0f, 1.0f);
+                c[i] = math::clamp(c[i], 0.0f, 1.0f);
             }
             return *this;
         }

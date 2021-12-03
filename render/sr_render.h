@@ -134,7 +134,7 @@ namespace SR {
         void draw_wireframe(sr_object obj, sr_color color) const {
             mat4x4f model = obj.transform.get_world_matrix();
             mat4x4f view = camera->get_look_at_matrix();
-            mat4x4f projection = camera->get_perspective_matrix(aspect(width, height));
+            mat4x4f projection = camera->get_perspective_matrix(math::aspect(width, height));
             mat4x4f mvp = model * view * projection;
             for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
                 vec4f screen_point[3];
@@ -150,7 +150,7 @@ namespace SR {
         void draw_normal(sr_object obj, sr_color color) const {
             mat4x4f model = obj.transform.get_world_matrix();
             mat4x4f view = camera->get_look_at_matrix();
-            mat4x4f projection = camera->get_perspective_matrix(aspect(width, height));
+            mat4x4f projection = camera->get_perspective_matrix(math::aspect(width, height));
             mat4x4f mvp = model * view * projection;
             for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
                 for (int j = 0; j < 3; j++) {
@@ -167,7 +167,7 @@ namespace SR {
         void draw_js_normal(sr_object obj, sr_color color) const {
             mat4x4f model = obj.transform.get_world_matrix();
             mat4x4f view = camera->get_look_at_matrix();
-            mat4x4f projection = camera->get_perspective_matrix(aspect(width, height));
+            mat4x4f projection = camera->get_perspective_matrix(math::aspect(width, height));
             mat4x4f mvp = model * view * projection;
             for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
                 vec4f mpf[3];
@@ -195,7 +195,7 @@ namespace SR {
         void draw_axis(sr_object obj) const {
             mat4x4f model = obj.transform.get_world_matrix();
             mat4x4f view = camera->get_look_at_matrix();
-            mat4x4f projection = camera->get_perspective_matrix(aspect(width, height));
+            mat4x4f projection = camera->get_perspective_matrix(math::aspect(width, height));
             // z forward
             vec4f p = obj.transform.position.xyz1();
             vec4f fp = vec4f(0, 0, 3, 1) * model + p;
@@ -281,7 +281,7 @@ namespace SR {
             shader *shader = obj.mesh.shader;
             shader->mat_model = obj.transform.get_world_matrix();
             shader->mat_view = camera->get_look_at_matrix();
-            shader->mat_proj = camera->get_perspective_matrix(aspect(width, height));
+            shader->mat_proj = camera->get_perspective_matrix(math::aspect(width, height));
             shader->light.color = light->color.c;
             shader->light.direction = light->direction;
             shader->light.position = light->position;
@@ -343,7 +343,7 @@ namespace SR {
 
         void draw_depth(sr_object obj) {
             mat4x4f mvp = obj.transform.get_world_matrix() * camera->get_look_at_matrix() *
-                          camera->get_perspective_matrix(aspect(width, height));
+                          camera->get_perspective_matrix(math::aspect(width, height));
             for (int i = 0; i < obj.mesh.triangles.size(); i += 3) {
                 vec4f cpf[3];       // 齐次空间坐标
                 vec2f spf[3];       // 屏幕坐标
