@@ -1,15 +1,14 @@
 //
-// Created by long on 2021/12/2.
+// Created by long on 2021/12/7.
 //
 
-#ifndef SHEEPRENDER_SR_BARYCENTRIC_RENDER_H
-#define SHEEPRENDER_SR_BARYCENTRIC_RENDER_H
+#ifndef SHEEPRENDER_SR_EDGE_EQUATION_RENDER_H
+#define SHEEPRENDER_SR_EDGE_EQUATION_RENDER_H
 
 namespace SR {
-    typedef struct sr_barycentric_render : public sr_mesh_render {
-        sr_barycentric_render(sr_texture_2d *texture, sr_camera *camera, sr_light *light, float *z_buffer)
-                : sr_mesh_render(
-                texture, camera, light, z_buffer) {}
+    typedef struct sr_edge_equation_render : public sr_mesh_render {
+        sr_edge_equation_render(sr_texture_2d *texture, sr_camera *camera, sr_light *light, float *z_buffer)
+                : sr_mesh_render(texture, camera, light, z_buffer) {}
 
         // shader上下文初始化
         void init(sr_object *obj) override {
@@ -32,7 +31,7 @@ namespace SR {
             box_bound(box_min, box_max, screen_pi[vert_id]);
         }
 
-        // 像素计算(基于重心坐标)(慢)
+        // 像素计算(基于edge-equation)(慢)
         void fragment() override {
             for (int x = box_min.x; x < box_max.x; x++) {
                 for (int y = box_min.y; y < box_max.y; y++) {
@@ -57,7 +56,7 @@ namespace SR {
                 }
             }
         }
-    } barycentric_render;
+    } edge_equation_render;
 }
 
-#endif //SHEEPRENDER_SR_BARYCENTRIC_RENDER_H
+#endif //SHEEPRENDER_SR_EDGE_EQUATION_RENDER_H

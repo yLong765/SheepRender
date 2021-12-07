@@ -58,6 +58,7 @@
 #include "render/sr_wireframe_render.h"
 #include "render/sr_mesh_render.h"
 #include "render/sr_barycentric_render.h"
+#include "render/sr_edge_equation_render.h"
 #include "render/sr_depth_render.h"
 #include "render/sr_render.h"
 
