@@ -8,7 +8,6 @@
 namespace SR {
     typedef struct sr_mesh_render : public sr_base_render {
     protected:
-        sr_camera *camera;  // 相对于哪个相机渲染
         sr_light *light;    // 相对于哪个灯光渲染
 
         vec4f ndc_p[3];     // 归一化设备坐标
@@ -20,8 +19,7 @@ namespace SR {
         sr_shader *shader;
 
         sr_mesh_render(sr_texture_2d *texture, sr_camera *camera, sr_light *light, float *z_buffer) : sr_base_render(
-                texture, z_buffer) {
-            this->camera = camera;
+                texture, camera, z_buffer) {
             this->light = light;
         }
 
@@ -50,28 +48,6 @@ namespace SR {
             }
 
             return in;
-        }
-
-        // 归一化齐次坐标
-        vec4f clip2ndc(vec4f clip_p) {
-            // 1 / w
-            float rhw = 1.0f / clip_p.w;
-            // 归一化到[-1, 1] cvv
-            return clip_p * rhw;
-        }
-
-        // 屏幕坐标
-        vec2f ndc2screen(vec4f ndc_p) {
-            return {(ndc_p.x + 1.0f) * width * 0.5f, (1.0f - ndc_p.y) * height * 0.5f};
-        }
-
-        // 整数屏幕坐标：加0.5的偏移取屏幕像素方格中心对齐
-        vec2i screen_f2i(vec2f screen_pf) {
-            return {(int) (screen_pf.x + 0.5f), (int) (screen_pf.y + 0.5f)};
-        }
-
-        vec2f clip2screen(vec4f clip_p) {
-            return ndc2screen(clip2ndc(clip_p));
         }
 
         // 三角形外接矩形

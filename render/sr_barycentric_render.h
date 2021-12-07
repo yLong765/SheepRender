@@ -7,15 +7,16 @@
 
 namespace SR {
     typedef struct sr_barycentric_render : public sr_mesh_render {
-        sr_barycentric_render(sr_texture_2d *texture, sr_camera *camera, sr_light *light, float *z_buffer) : sr_mesh_render(
+        sr_barycentric_render(sr_texture_2d *texture, sr_camera *camera, sr_light *light, float *z_buffer)
+                : sr_mesh_render(
                 texture, camera, light, z_buffer) {}
 
         // shader上下文初始化
         void init(sr_object *obj) override {
             shader = obj->mesh->shader;
             shader->mat_model = obj->transform.get_world_matrix();
-            shader->mat_view = camera->get_look_at_matrix();
-            shader->mat_proj = camera->get_perspective_matrix(math::aspect(width, height));
+            shader->mat_view = get_view_matrix();
+            shader->mat_proj = get_projection_matrix();
             shader->light.color = light->color.c;
             shader->light.direction = light->direction;
             shader->light.position = light->position;

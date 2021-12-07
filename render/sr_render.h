@@ -15,11 +15,25 @@ namespace SR {
     };
 
     enum RENDER_WIREFRAME_TYPE {
-        AXIS_WIREFRAME = 0,
+        LINE_WIREFRAME = 0,
+        TRIANGLE_WIREFRAME = 1,
+        AXIS_WIREFRAME = 2,
     };
 
     // 渲染类
     typedef struct sr_render : public sr_singleton<sr_render> {
+    private:
+        sr_color wireframe_color = sr_color(1.0f, 1.0f, 1.0f);
+
+        sr_wireframe_render *wireframe_render = nullptr;  // 线框绘制
+
+        sr_wireframe_render *get_wireframe_render() {
+            if (wireframe_render == nullptr) {
+                wireframe_render = new sr_wireframe_render(texture, camera, z_buffer);
+            }
+            return wireframe_render;
+        }
+
     protected:
         int width;              // 宽
         int height;             // 高
@@ -81,69 +95,6 @@ namespace SR {
             }
         }
 
-        // 绘制像素点
-        void draw_pixel(int x, int y, color color) {
-            if (x >= 0 && x < width && y >= 0 && y < height) {
-                texture->set(x, y, color);
-            }
-        }
-
-        // 绘制线
-        void draw_line(int x1, int y1, int x2, int y2, color color) {
-            int x, y, rem = 0;
-            if (x1 == x2 && y1 == y2) {
-                draw_pixel(x1, y1, color);
-            } else if (x1 == x2) {
-                int inc = (y1 <= y2) ? 1 : -1;
-                for (y = y1; y != y2; y += inc) draw_pixel(x1, y, color);
-                draw_pixel(x2, y2, color);
-            } else if (y1 == y2) {
-                int inc = (x1 <= x2) ? 1 : -1;
-                for (x = x1; x != x2; x += inc) draw_pixel(x, y1, color);
-                draw_pixel(x2, y2, color);
-            } else {
-                int dx = (x1 < x2) ? x2 - x1 : x1 - x2;
-                int dy = (y1 < y2) ? y2 - y1 : y1 - y2;
-                if (dx >= dy) {
-                    if (x2 < x1) x = x1, y = y1, x1 = x2, y1 = y2, x2 = x, y2 = y;
-                    for (x = x1, y = y1; x <= x2; x++) {
-                        draw_pixel(x, y, color);
-                        rem += dy;
-                        if (rem >= dx) {
-                            rem -= dx;
-                            y += (y2 >= y1) ? 1 : -1;
-                            draw_pixel(x, y, color);
-                        }
-                    }
-                    draw_pixel(x2, y2, color);
-                } else {
-                    if (y2 < y1) x = x1, y = y1, x1 = x2, y1 = y2, x2 = x, y2 = y;
-                    for (x = x1, y = y1; y <= y2; y++) {
-                        draw_pixel(x, y, color);
-                        rem += dx;
-                        if (rem >= dy) {
-                            rem -= dy;
-                            x += (x2 >= x1) ? 1 : -1;
-                            draw_pixel(x, y, color);
-                        }
-                    }
-                    draw_pixel(x2, y2, color);
-                }
-            }
-        }
-
-        // 绘制线
-        void draw_line(vec4f v1, vec4f v2, color color) {
-            draw_line((int) v1.x, (int) v1.y, (int) v2.x, (int) v2.y, color);
-        }
-
-        // 绘制三角形线框
-        void draw_triangle_wireframe(vec4f v1, vec4f v2, vec4f v3, color color) {
-            draw_line((int) v1.x, (int) v1.y, (int) v2.x, (int) v2.y, color);
-            draw_line((int) v2.x, (int) v2.y, (int) v3.x, (int) v3.y, color);
-            draw_line((int) v3.x, (int) v3.y, (int) v1.x, (int) v1.y, color);
-        }
-
         // 绘制物体的本地坐标轴
 //        void draw_axis(sr_object obj) {
 //            mat4x4f model = obj.transform.get_world_matrix();
@@ -195,8 +146,25 @@ namespace SR {
             }
         }
 
-        void draw_wireframe(RENDER_WIREFRAME_TYPE type) {
+        void set_draw_color(sr_color color) {
+            wireframe_color = color;
+        }
 
+        void draw_line(vec3f start, vec3f end) {
+            get_wireframe_render()->draw_world_line(start, end, wireframe_color);
+        }
+
+        void draw_ray(vec3f from, vec3f direction) {
+            get_wireframe_render()->draw_world_ray(from, direction, wireframe_color);
+        }
+
+        void draw_axis(vec3f origin, vec3f up, vec3f right, vec3f forward) {
+            get_wireframe_render()->draw_world_axis(origin, up, right, forward);
+        }
+
+        void draw_axis(sr_object *obj) {
+            get_wireframe_render()->draw_world_axis(obj->transform.position, obj->transform.up(),
+                                                    obj->transform.right(), obj->transform.forward());
         }
     } render;
 }

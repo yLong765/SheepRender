@@ -30,6 +30,7 @@ int main() {
         render::instance().clear_color(color(0.0f, 0.0f, 0.0f));
         render::instance().clear_z_buffer();
         render::instance().draw_mesh(DEPTH_RENDER);
+        render::instance().draw_axis(obj);
 
         screen->set_buffer(&texture);
         screen->update_hdc();

@@ -48,6 +48,16 @@ namespace SR {
         vec3f forward() {
             return (vec3f::forward().xyz1() * get_world_matrix()).xyz();
         }
+
+        // 获取模型上方
+        vec3f up() {
+            return (vec3f::up().xyz1() * get_world_matrix()).xyz();
+        }
+
+        // 获取模型右方
+        vec3f right() {
+            return (vec3f::right().xyz1() * get_world_matrix()).xyz();
+        }
     } transform;
 }
 

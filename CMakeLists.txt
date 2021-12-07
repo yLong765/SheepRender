@@ -3,4 +3,4 @@ project(SheepRender)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(SheepRender sheep_render.cpp math/sr_matrix.h math/sr_vector.h sheep_render.h sr_screen.h sr_transform.h sr_object.h sr_color.h sr_mesh.h render/sr_render.h sr_camera.h shader/sr_shader.h shader/sr_constant_shader.h sr_obj_loader.h sr_texture_2d.h sr_object_mgr.h math/sr_math.h sr_light.h shader/sr_phong_shader.h utility/sr_clock.h render/sr_barycentric_render.h render/sr_render_inc.h sr_input.h render/sr_depth_render.h utility/sr_singleton.h render/sr_mesh_render.h render/sr_base_render.h)
+add_executable(SheepRender sheep_render.cpp math/sr_matrix.h math/sr_vector.h sheep_render.h sr_screen.h sr_transform.h sr_object.h sr_color.h sr_mesh.h render/sr_render.h sr_camera.h shader/sr_shader.h shader/sr_constant_shader.h sr_obj_loader.h sr_texture_2d.h sr_object_mgr.h math/sr_math.h sr_light.h shader/sr_phong_shader.h utility/sr_clock.h render/sr_barycentric_render.h render/sr_render_inc.h sr_input.h render/sr_depth_render.h utility/sr_singleton.h render/sr_mesh_render.h render/sr_base_render.h render/sr_wireframe_render.h)
