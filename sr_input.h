@@ -21,7 +21,7 @@ namespace SR {
             keys[VK_MOUSEWHEELUP] = 0;
             keys[VK_MOUSEWHEELDOWN] = 0;
 
-            screen->dispatch();
+            screen::instance().dispatch();
 
             if (keys[VK_LBUTTON]) {
                 if (first) {

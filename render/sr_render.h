@@ -135,8 +135,8 @@ namespace SR {
         }
 
         void draw_axis(sr_object *obj) {
-            get_wireframe_render()->draw_world_axis(obj->transform.position, obj->transform.up(),
-                                                    obj->transform.right(), obj->transform.forward());
+            get_wireframe_render()->draw_world_axis(obj->get_trans()->position, obj->get_trans()->up(),
+                                                    obj->get_trans()->right(), obj->get_trans()->forward());
         }
     } render;
 }

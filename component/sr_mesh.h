@@ -7,7 +7,7 @@
 
 namespace SR {
     // 模型网格
-    typedef struct sr_mesh {
+    typedef struct sr_mesh : public sr_component {
         std::vector<vec3f> vertices;    // 顶点数组
         std::vector<vec3f> normals;     // 顶点向量数组
         std::vector<vec2f> uv;          // 顶点贴图UV
@@ -15,6 +15,7 @@ namespace SR {
         sr_shader *shader;              // 所使用shader
 
         sr_mesh() {
+            type = COMP_MESH;
             shader = new sr_constant_shader();
         };
 

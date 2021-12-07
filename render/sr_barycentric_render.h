@@ -13,8 +13,8 @@ namespace SR {
 
         // shader上下文初始化
         void init(sr_object *obj) override {
-            shader = obj->mesh->shader;
-            shader->mat_model = obj->transform.get_world_matrix();
+            shader = obj->get_mesh()->shader;
+            shader->mat_model = obj->get_trans()->get_world_matrix();
             shader->mat_view = get_view_matrix();
             shader->mat_proj = get_projection_matrix();
             shader->light.color = light->color.c;

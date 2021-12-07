@@ -92,15 +92,15 @@ namespace SR {
 
     public:
         virtual void draw() {
-            std::vector<sr_object *> objs = object_mgr::get_objs();
-            for (auto &obj : objs) {
+            for (auto &obj : object_mgr::instance().get_objs()) {
                 init(obj);
-                for (int i = 0; i < obj->mesh->triangles.size(); i += 3) {
+                for (int i = 0; i < obj->get_mesh()->triangles.size(); i += 3) {
                     for (int j = 0; j < 3; j++) {
-                        int id = obj->mesh->triangles[i + j];
+                        sr_mesh *mesh = obj->get_mesh();
+                        int id = mesh->triangles[i + j];
                         vert_in in;
-                        in.v3f[VERTEX_MODEL] = obj->mesh->vertices[id];
-                        in.v3f[NORMAL_MODEL] = obj->mesh->normals[id];
+                        in.v3f[VERTEX_MODEL] = mesh->vertices[id];
+                        in.v3f[NORMAL_MODEL] = mesh->normals[id];
                         vertex(j, in);
                     }
                     if (!triangles_direction()) continue;

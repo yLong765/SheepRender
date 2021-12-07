@@ -18,8 +18,8 @@ int main() {
         if (keys[VK_MOUSEWHEELUP]) camera.from.z += 0.1f;
         if (keys[VK_MOUSEWHEELDOWN]) camera.from.z -= 0.1f;
         vec2f change = input::instance().get_mouse_change();
-        obj->transform.euler.x += change.y * 0.2f;
-        obj->transform.euler.y += change.x * 0.2f;
+        obj->get_trans()->euler.x += change.y * 0.2f;
+        obj->get_trans()->euler.y += change.x * 0.2f;
 
         sr_clock::instance().begin();
 

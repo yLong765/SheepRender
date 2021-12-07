@@ -7,7 +7,7 @@
 
 namespace SR {
     // 变换类
-    typedef struct sr_transform {
+    typedef struct sr_transform : public sr_component {
         vec3f position{};   // 世界位置
         vec3f euler{};      // 欧拉角
         vec3f scale{};      // 缩放
@@ -18,6 +18,7 @@ namespace SR {
         bool is_init;       // 是否初始化
 
         sr_transform(bool is_state = false) : is_static(is_static) {
+            type = COMP_TRANSFORM;
             position = vec3f::zero();
             euler = vec3f::zero();
             scale = vec3f::one();

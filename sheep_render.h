@@ -13,6 +13,7 @@
 #include <cassert>
 #include <cmath>
 #include <map>
+#include <set>
 #include <vector>
 #include <cfloat>
 #include <windows.h>
@@ -37,10 +38,11 @@
 #include "shader/sr_phong_shader.h"
 
 // component
-#include "sr_transform.h"
+#include "component/sr_component.h"
+#include "component/sr_transform.h"
+#include "component/sr_mesh.h"
 #include "sr_light.h"
 #include "sr_camera.h"
-#include "sr_mesh.h"
 
 // other
 #include "sr_obj_loader.h"
@@ -51,7 +53,13 @@
 
 #include "sr_input.h"
 
-#include "render/sr_render_inc.h"
+// render
+#include "render/sr_base_render.h"
+#include "render/sr_wireframe_render.h"
+#include "render/sr_mesh_render.h"
+#include "render/sr_barycentric_render.h"
+#include "render/sr_depth_render.h"
+#include "render/sr_render.h"
 
 
 #endif //SHEEPRENDER_SHEEP_RENDER_H

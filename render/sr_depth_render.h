@@ -14,7 +14,7 @@ namespace SR {
 
         // 初始化MVP矩阵
         void init(sr_object *obj) override {
-            mvp = obj->transform.get_world_matrix() * get_view_matrix() * get_projection_matrix();
+            mvp = obj->get_trans()->get_world_matrix() * get_view_matrix() * get_projection_matrix();
         }
 
         void vertex(int vert_id, vert_in in) override {
