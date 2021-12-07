@@ -14,17 +14,16 @@ namespace SR {
         DEPTH_RENDER = 10,
     };
 
-    enum RENDER_WIREFRAME_TYPE {
-        LINE_WIREFRAME = 0,
-        TRIANGLE_WIREFRAME = 1,
-        AXIS_WIREFRAME = 2,
-    };
-
     // 渲染类
     typedef struct sr_render : public sr_singleton<sr_render> {
     private:
-        sr_color wireframe_color = sr_color(1.0f, 1.0f, 1.0f);
+        sr_texture_2d *texture; // 颜色写入的贴图
+        sr_camera *camera;      // 相对于哪个相机渲染
+        sr_light *light;        // 相对于哪个灯光渲染
+        float *z_buffer;        // 深度缓冲
 
+        /// 线框渲染器
+        sr_color wireframe_color = sr_color(1.0f, 1.0f, 1.0f);
         sr_wireframe_render *wireframe_render = nullptr;  // 线框绘制
 
         sr_wireframe_render *get_wireframe_render() {
@@ -33,40 +32,42 @@ namespace SR {
             }
             return wireframe_render;
         }
+        /// 线框渲染器
 
-    protected:
-        int width;              // 宽
-        int height;             // 高
-        sr_texture_2d *texture; // 颜色写入的贴图
-        sr_camera *camera;      // 相对于哪个相机渲染
-        sr_light *light;        // 相对于哪个灯光渲染
-        float *z_buffer;        // 深度缓冲
+        /// 网格渲染器
+        sr_barycentric_render *barycentric_render = nullptr;
+
+        sr_barycentric_render *get_barycentric_render() {
+            if (barycentric_render == nullptr) {
+                barycentric_render = new sr_barycentric_render(texture, camera, light, z_buffer);
+            }
+            return barycentric_render;
+        }
+
+        sr_depth_render *depth_render = nullptr;
+
+        sr_depth_render *get_depth_render() {
+            if (depth_render == nullptr) {
+                depth_render = new sr_depth_render(texture, camera, light, z_buffer);
+            }
+            return depth_render;
+        }
+        /// 网格渲染器
 
     public:
         sr_render() = default;
 
-        sr_render(sr_texture_2d *texture) {
-            this->width = texture->width;
-            this->height = texture->height;
-            this->texture = texture;
-            this->z_buffer = (float *) malloc(sizeof(float) * width * height);
-        }
-
-        sr_render(sr_texture_2d *texture, sr_camera *camera, sr_light *light) {
-            this->width = texture->width;
-            this->height = texture->height;
+        void init(sr_texture_2d *texture, sr_camera *camera, sr_light *light) {
             this->texture = texture;
             this->camera = camera;
             this->light = light;
-            this->z_buffer = (float *) malloc(sizeof(float) * width * height);
+            this->z_buffer = (float *) malloc(sizeof(float) * texture->width * texture->height);
         }
 
         // 设置贴图
         void set_texture(sr_texture_2d *texture) {
             this->texture = texture;
-            this->width = texture->width;
-            this->height = texture->height;
-            this->z_buffer = (float *) malloc(sizeof(float) * width * height);
+            this->z_buffer = (float *) malloc(sizeof(float) * texture->width * texture->height);
         }
 
         // 设置相机
@@ -80,65 +81,36 @@ namespace SR {
         }
 
         // 清空颜色
-        void clear_color(color color) const {
-            int pixel_count = width * height;
-            for (int i = 0; i < pixel_count; i++) {
+        void clear_color(color color = sr_color(0.0f, 0.0f, 0.0f)) const {
+            for (int i = 0; i < texture->get_count(); i++) {
                 texture->set(i, color);
             }
         }
 
         // 清空深度缓冲
-        void clear_z_buffer() {
-            int pixel_count = width * height;
-            for (int i = 0; i < pixel_count; i++) {
+        void clear_z_buffer() const {
+            for (int i = 0; i < texture->get_count(); i++) {
                 z_buffer[i] = FLT_MAX;
             }
         }
 
-        // 绘制物体的本地坐标轴
-//        void draw_axis(sr_object obj) {
-//            mat4x4f model = obj.transform.get_world_matrix();
-//            mat4x4f view = camera->get_look_at_matrix();
-//            mat4x4f projection = camera->get_perspective_matrix(math::aspect(width, height));
-//            // z forward
-//            vec4f mpf = obj.transform.position.xyz1();
-//            vec4f fp = vec4f(0, 0, 3, 1) * model + mpf;
-//            vec4f cpf = mpf * view * projection;
-//            fp = fp * view * projection;
-//            vec4f ndc = clip2ndc(cpf);
-//            vec2f spf = ndc2screen(ndc);
-//            fp = camera->homogenize(fp, width, height);
-//            draw_line(p, fp, color(0, 0, 1));
-//            // y up
-//            p = obj.transform.position.xyz1();
-//            fp = vec4f(0, 3, 0, 1) * model + p;
-//            p = p * view * projection;
-//            fp = fp * view * projection;
-//            p = camera->homogenize(p, width, height);
-//            fp = camera->homogenize(fp, width, height);
-//            draw_line(p, fp, color(0, 1, 0));
-//            // x right
-//            p = obj.transform.position.xyz1();
-//            fp = vec4f(3, 0, 0, 1) * model + p;
-//            p = p * view * projection;
-//            fp = fp * view * projection;
-//            p = camera->homogenize(p, width, height);
-//            fp = camera->homogenize(fp, width, height);
-//            draw_line(p, fp, color(1, 0, 0));
-//        }
+        void clear() const {
+            clear_z_buffer();
+            clear_color();
+        }
 
         void draw_mesh(RENDER_MESH_TYPE type = BARYCENTRIC_COORDINATE) {
             sr_mesh_render *render = nullptr;
             switch (type) {
                 case BARYCENTRIC_COORDINATE:
-                    render = new sr_barycentric_render(texture, camera, light, z_buffer);
+                    render = get_barycentric_render();
                     break;
                 case EDGE_EQUATION:
                     break;
                 case EDGE_WALKING:
                     break;
                 case DEPTH_RENDER:
-                    render = new sr_depth_render(texture, camera, light, z_buffer);
+                    render = get_depth_render();
                     break;
             }
             if (render != nullptr) {

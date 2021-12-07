@@ -11,6 +11,7 @@ namespace SR {
                                                                                                          camera,
                                                                                                          z_buffer) {}
 
+        // 绘制世界坐标线段
         void draw_world_line(vec3f start, vec3f end, sr_color color) {
             mat4x4f view = get_view_matrix();
             mat4x4f projection = get_projection_matrix();
@@ -19,6 +20,7 @@ namespace SR {
             draw_line(s_start, s_end, color);
         }
 
+        // 绘制世界坐标射线
         void draw_world_ray(vec3f from, vec3f direction, sr_color color) {
             mat4x4f view = get_view_matrix();
             mat4x4f projection = get_projection_matrix();
@@ -27,6 +29,7 @@ namespace SR {
             draw_line(s_from, s_end, color);
         }
 
+        // 绘制世界坐标物体的本地坐标轴
         void draw_world_axis(vec3f origin, vec3f up, vec3f right, vec3f forward) {
             mat4x4f view = get_view_matrix();
             mat4x4f projection = get_projection_matrix();

@@ -13,7 +13,7 @@ namespace SR {
     static int screen_exit;
 
     // 基于Windows的窗口类
-    typedef struct sr_screen {
+    typedef struct sr_screen : public sr_singleton<sr_screen> {
         WNDCLASS wc;
         HWND handle;
         int width;
@@ -56,117 +56,218 @@ namespace SR {
         void set_title(const char *title) const {
             SetWindowTextA(handle, title);
         }
+
+        // 事件响应类
+        static LRESULT CALLBACK event_screen(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+            switch (msg) {
+                case WM_CLOSE:
+                    screen_exit = 1;
+                    CloseWindow(hWnd);
+                    break;
+                case WM_DESTROY:
+                    PostQuitMessage(0);
+                    break;
+                case WM_KEYDOWN:
+                    keys[wParam & 511] = 1;
+                    break;
+                case WM_KEYUP:
+                    keys[wParam & 511] = 0;
+                    break;
+                case WM_LBUTTONDOWN:
+                    keys[VK_LBUTTON & 511] = 1;
+                    break;
+                case WM_RBUTTONDOWN:
+                    keys[VK_RBUTTON & 511] = 1;
+                    break;
+                case WM_LBUTTONUP:
+                    keys[VK_LBUTTON & 511] = 0;
+                    break;
+                case WM_RBUTTONUP:
+                    keys[VK_RBUTTON & 511] = 0;
+                    break;
+                case WM_MOUSEWHEEL:
+                    keys[VK_MOUSEWHEELUP & 511] = HIWORD(wParam) == WHEEL_DELTA;
+                    keys[VK_MOUSEWHEELDOWN & 511] = HIWORD(wParam) != WHEEL_DELTA;
+                default:
+                    return DefWindowProc(hWnd, msg, wParam, lParam);
+            }
+            return 0;
+        }
+
+        void init(int width, int height, const char *title) {
+            this->width = width;
+            this->height = height;
+
+            wc.style = CS_BYTEALIGNCLIENT;
+            wc.lpfnWndProc = event_screen;
+            wc.cbClsExtra = 0;
+            wc.cbWndExtra = 0;
+            wc.hInstance = GetModuleHandle(nullptr);
+            wc.hIcon = nullptr;
+            wc.hCursor = LoadCursor(nullptr, IDC_ARROW);;
+            wc.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
+            wc.lpszMenuName = nullptr;
+            wc.lpszClassName = title;
+
+            assert(RegisterClass(&wc));
+
+            BITMAPINFO bi;
+            bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+            bi.bmiHeader.biWidth = width;
+            bi.bmiHeader.biHeight = -height;
+            bi.bmiHeader.biPlanes = 1;
+            bi.bmiHeader.biBitCount = 32;
+            bi.bmiHeader.biCompression = BI_RGB;
+            bi.bmiHeader.biSizeImage = static_cast<DWORD>(width * height * 4);
+            bi.bmiHeader.biXPelsPerMeter = 0;
+            bi.bmiHeader.biYPelsPerMeter = 0;
+            bi.bmiHeader.biClrUsed = 0;
+            bi.bmiHeader.biClrImportant = 0;
+
+            handle = CreateWindow(title, title, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+                                  0, 0, 0, 0, nullptr, nullptr, wc.hInstance, nullptr);
+            assert(handle != nullptr);
+
+            HDC screen_dc = GetDC(handle);
+            memory_dc = CreateCompatibleDC(screen_dc);
+            ReleaseDC(handle, screen_dc);
+
+            // 分配bitmap和framebuffer
+            LPVOID ptr;
+            HBITMAP hbitmap = CreateDIBSection(memory_dc, &bi, DIB_RGB_COLORS, &ptr, nullptr, 0);
+            assert(hbitmap != nullptr);
+
+            HBITMAP screen_ob = (HBITMAP) SelectObject(memory_dc, hbitmap);
+            // 分配bitmap和framebuffer
+
+            // 调整界面大小
+            RECT rect = {0, 0, width, height};
+            AdjustWindowRect(&rect, GetWindowLong(handle, GWL_STYLE), 0);
+            int wx = rect.right - rect.left;
+            int wy = rect.bottom - rect.top;
+            int sx = (GetSystemMetrics(SM_CXSCREEN) - wx) / 2;
+            int sy = (GetSystemMetrics(SM_CYSCREEN) - wy) / 2;
+            if (sy < 0) sy = 0;
+            SetWindowPos(handle, nullptr, sx, sy, wx, wy, (SWP_NOCOPYBITS | SWP_NOZORDER | SWP_SHOWWINDOW));
+            SetForegroundWindow(handle);
+
+            ShowWindow(handle, SW_SHOW);
+
+            frame_buffer = (UINT *) ptr;
+            memset(frame_buffer, 0, width * height * sizeof(UINT));
+            memset(keys, 0, sizeof(int) * 512);
+        }
     } screen;
 
-    // 事件响应类
-    static LRESULT CALLBACK event_screen(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-        switch (msg) {
-            case WM_CLOSE:
-                screen_exit = 1;
-                CloseWindow(hWnd);
-                break;
-            case WM_DESTROY:
-                PostQuitMessage(0);
-                break;
-            case WM_KEYDOWN:
-                keys[wParam & 511] = 1;
-                break;
-            case WM_KEYUP:
-                keys[wParam & 511] = 0;
-                break;
-            case WM_LBUTTONDOWN:
-                keys[VK_LBUTTON & 511] = 1;
-                break;
-            case WM_RBUTTONDOWN:
-                keys[VK_RBUTTON & 511] = 1;
-                break;
-            case WM_LBUTTONUP:
-                keys[VK_LBUTTON & 511] = 0;
-                break;
-            case WM_RBUTTONUP:
-                keys[VK_RBUTTON & 511] = 0;
-                break;
-            case WM_MOUSEWHEEL:
-                keys[VK_MOUSEWHEELUP & 511] = HIWORD(wParam) == WHEEL_DELTA;
-                keys[VK_MOUSEWHEELDOWN & 511] = HIWORD(wParam) != WHEEL_DELTA;
-            default:
-                return DefWindowProc(hWnd, msg, wParam, lParam);
-        }
-        return 0;
-    }
-
-    // 创建窗口类
-    sr_screen *create_screen(int width, int height, const char *title) {
-        WNDCLASS wc;
-        wc.style = CS_BYTEALIGNCLIENT;
-        wc.lpfnWndProc = event_screen;
-        wc.cbClsExtra = 0;
-        wc.cbWndExtra = 0;
-        wc.hInstance = GetModuleHandle(nullptr);
-        wc.hIcon = nullptr;
-        wc.hCursor = LoadCursor(nullptr, IDC_ARROW);;
-        wc.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
-        wc.lpszMenuName = nullptr;
-        wc.lpszClassName = title;
-
-        assert(RegisterClass(&wc));
-
-        BITMAPINFO bi;
-        bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-        bi.bmiHeader.biWidth = width;
-        bi.bmiHeader.biHeight = -height;
-        bi.bmiHeader.biPlanes = 1;
-        bi.bmiHeader.biBitCount = 32;
-        bi.bmiHeader.biCompression = BI_RGB;
-        bi.bmiHeader.biSizeImage = static_cast<DWORD>(width * height * 4);
-        bi.bmiHeader.biXPelsPerMeter = 0;
-        bi.bmiHeader.biYPelsPerMeter = 0;
-        bi.bmiHeader.biClrUsed = 0;
-        bi.bmiHeader.biClrImportant = 0;
-
-        HWND handle = CreateWindow(title, title, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-                                   0, 0, 0, 0, nullptr, nullptr, wc.hInstance, nullptr);
-        assert(handle != nullptr);
-
-        HDC screen_dc = GetDC(handle);
-        HDC memory_dc = CreateCompatibleDC(screen_dc);
-        ReleaseDC(handle, screen_dc);
-
-        // 分配bitmap和framebuffer
-        LPVOID ptr;
-        HBITMAP hbitmap = CreateDIBSection(memory_dc, &bi, DIB_RGB_COLORS, &ptr, nullptr, 0);
-        assert(hbitmap != nullptr);
-
-        HBITMAP screen_ob = (HBITMAP) SelectObject(memory_dc, hbitmap);
-        // 分配bitmap和framebuffer
-
-        // 调整界面大小
-        RECT rect = {0, 0, width, height};
-        AdjustWindowRect(&rect, GetWindowLong(handle, GWL_STYLE), 0);
-        int wx = rect.right - rect.left;
-        int wy = rect.bottom - rect.top;
-        int sx = (GetSystemMetrics(SM_CXSCREEN) - wx) / 2;
-        int sy = (GetSystemMetrics(SM_CYSCREEN) - wy) / 2;
-        if (sy < 0) sy = 0;
-        SetWindowPos(handle, nullptr, sx, sy, wx, wy, (SWP_NOCOPYBITS | SWP_NOZORDER | SWP_SHOWWINDOW));
-        SetForegroundWindow(handle);
-
-        ShowWindow(handle, SW_SHOW);
-
-        memset(keys, 0, sizeof(int) * 512);
-
-        sr_screen *screen = new sr_screen();
-        screen->wc = wc;
-        screen->handle = handle;
-        screen->width = width;
-        screen->height = height;
-        screen->memory_dc = memory_dc;
-        screen->frame_buffer = (UINT *) ptr;
-
-        memset(screen->frame_buffer, 0, width * height * sizeof(UINT));
-
-        return screen;
-    }
+//    // 事件响应类
+//    static LRESULT CALLBACK event_screen(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+//        switch (msg) {
+//            case WM_CLOSE:
+//                screen_exit = 1;
+//                CloseWindow(hWnd);
+//                break;
+//            case WM_DESTROY:
+//                PostQuitMessage(0);
+//                break;
+//            case WM_KEYDOWN:
+//                keys[wParam & 511] = 1;
+//                break;
+//            case WM_KEYUP:
+//                keys[wParam & 511] = 0;
+//                break;
+//            case WM_LBUTTONDOWN:
+//                keys[VK_LBUTTON & 511] = 1;
+//                break;
+//            case WM_RBUTTONDOWN:
+//                keys[VK_RBUTTON & 511] = 1;
+//                break;
+//            case WM_LBUTTONUP:
+//                keys[VK_LBUTTON & 511] = 0;
+//                break;
+//            case WM_RBUTTONUP:
+//                keys[VK_RBUTTON & 511] = 0;
+//                break;
+//            case WM_MOUSEWHEEL:
+//                keys[VK_MOUSEWHEELUP & 511] = HIWORD(wParam) == WHEEL_DELTA;
+//                keys[VK_MOUSEWHEELDOWN & 511] = HIWORD(wParam) != WHEEL_DELTA;
+//            default:
+//                return DefWindowProc(hWnd, msg, wParam, lParam);
+//        }
+//        return 0;
+//    }
+//
+//    // 创建窗口类
+//    sr_screen *create_screen(int width, int height, const char *title) {
+//        WNDCLASS wc;
+//        wc.style = CS_BYTEALIGNCLIENT;
+//        wc.lpfnWndProc = event_screen;
+//        wc.cbClsExtra = 0;
+//        wc.cbWndExtra = 0;
+//        wc.hInstance = GetModuleHandle(nullptr);
+//        wc.hIcon = nullptr;
+//        wc.hCursor = LoadCursor(nullptr, IDC_ARROW);;
+//        wc.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
+//        wc.lpszMenuName = nullptr;
+//        wc.lpszClassName = title;
+//
+//        assert(RegisterClass(&wc));
+//
+//        BITMAPINFO bi;
+//        bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+//        bi.bmiHeader.biWidth = width;
+//        bi.bmiHeader.biHeight = -height;
+//        bi.bmiHeader.biPlanes = 1;
+//        bi.bmiHeader.biBitCount = 32;
+//        bi.bmiHeader.biCompression = BI_RGB;
+//        bi.bmiHeader.biSizeImage = static_cast<DWORD>(width * height * 4);
+//        bi.bmiHeader.biXPelsPerMeter = 0;
+//        bi.bmiHeader.biYPelsPerMeter = 0;
+//        bi.bmiHeader.biClrUsed = 0;
+//        bi.bmiHeader.biClrImportant = 0;
+//
+//        HWND handle = CreateWindow(title, title, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+//                                   0, 0, 0, 0, nullptr, nullptr, wc.hInstance, nullptr);
+//        assert(handle != nullptr);
+//
+//        HDC screen_dc = GetDC(handle);
+//        HDC memory_dc = CreateCompatibleDC(screen_dc);
+//        ReleaseDC(handle, screen_dc);
+//
+//        // 分配bitmap和framebuffer
+//        LPVOID ptr;
+//        HBITMAP hbitmap = CreateDIBSection(memory_dc, &bi, DIB_RGB_COLORS, &ptr, nullptr, 0);
+//        assert(hbitmap != nullptr);
+//
+//        HBITMAP screen_ob = (HBITMAP) SelectObject(memory_dc, hbitmap);
+//        // 分配bitmap和framebuffer
+//
+//        // 调整界面大小
+//        RECT rect = {0, 0, width, height};
+//        AdjustWindowRect(&rect, GetWindowLong(handle, GWL_STYLE), 0);
+//        int wx = rect.right - rect.left;
+//        int wy = rect.bottom - rect.top;
+//        int sx = (GetSystemMetrics(SM_CXSCREEN) - wx) / 2;
+//        int sy = (GetSystemMetrics(SM_CYSCREEN) - wy) / 2;
+//        if (sy < 0) sy = 0;
+//        SetWindowPos(handle, nullptr, sx, sy, wx, wy, (SWP_NOCOPYBITS | SWP_NOZORDER | SWP_SHOWWINDOW));
+//        SetForegroundWindow(handle);
+//
+//        ShowWindow(handle, SW_SHOW);
+//
+//        memset(keys, 0, sizeof(int) * 512);
+//
+//        sr_screen *screen = new sr_screen();
+//        screen->wc = wc;
+//        screen->handle = handle;
+//        screen->width = width;
+//        screen->height = height;
+//        screen->memory_dc = memory_dc;
+//        screen->frame_buffer = (UINT *) ptr;
+//
+//        memset(screen->frame_buffer, 0, width * height * sizeof(UINT));
+//
+//        return screen;
+//    }
 }
 
 #endif //SHEEPRENDER_SR_SCREEN_H

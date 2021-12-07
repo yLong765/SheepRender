@@ -6,14 +6,13 @@
 #define SHEEPRENDER_SR_INPUT_H
 
 namespace SR {
-    typedef struct sr_input {
+    typedef struct sr_input : public sr_singleton<sr_input> {
     private:
-        sr_screen *screen;
         vec2f prev_mouse_point;
         vec2f mouse_change;
         bool first;
     public:
-        sr_input(sr_screen *screen) : screen(screen) {
+        sr_input() {
             mouse_change = vec2f(0, 0);
             first = true;
         }
@@ -26,9 +25,9 @@ namespace SR {
 
             if (keys[VK_LBUTTON]) {
                 if (first) {
-                    prev_mouse_point = screen->get_mouse_point();
+                    prev_mouse_point = screen::instance().get_mouse_point();
                 } else {
-                    vec2f new_mouse_point = screen->get_mouse_point();
+                    vec2f new_mouse_point = screen::instance().get_mouse_point();
                     mouse_change = new_mouse_point - prev_mouse_point;
                     prev_mouse_point = new_mouse_point;
                 }

@@ -16,11 +16,13 @@ namespace SR {
     typedef struct sr_texture_2d {
         int width;  // 宽
         int height; // 高
+        int count;  // 像素总数
         TEXTURE_2D_TYPE type;
         std::vector<sr_color> colors;   // 颜色
 
         sr_texture_2d(int width, int height, TEXTURE_2D_TYPE type = TEX_RGB) : width(width), height(height) {
             colors = std::vector<sr_color>(width * height, sr_color(0, 0, 0, 1));
+            count = width * height;
             this->type = type;
         }
 
@@ -34,10 +36,12 @@ namespace SR {
             return colors[i];
         }
 
+        // 获取像素颜色（32位）
         UINT get_pixel(int i) {
             return colors[i].get_pixel_color();
         }
 
+        // 获取像素颜色（32位）
         UINT get_pixel(int x, int y) {
             return colors[x + y * width].get_pixel_color();
         }
@@ -53,6 +57,11 @@ namespace SR {
         // 设置位置颜色（二维）
         void set(int x, int y, sr_color color) {
             set(x + y * width, color);
+        }
+
+        // 获取像素总数
+        int get_count() const {
+            return count;
         }
     } texture_2d;
 }
