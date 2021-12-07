@@ -29,10 +29,10 @@
 #include "math/sr_math.h"
 
 // base data or component
-#include "sr_color.h"
-#include "sr_texture_2d.h"
-#include "sr_screen.h"
-#include "sr_input.h"
+#include "base_data/sr_color.h"
+#include "base_data/sr_texture_2d.h"
+#include "base_data/sr_screen.h"
+#include "base_data/sr_input.h"
 
 // shader
 #include "shader/sr_shader.h"
@@ -43,15 +43,15 @@
 #include "component/sr_component.h"
 #include "component/sr_transform.h"
 #include "component/sr_mesh.h"
-#include "sr_light.h"
-#include "sr_camera.h"
+#include "component/sr_light.h"
+#include "component/sr_camera.h"
 
 // asset loader
-#include "sr_obj_loader.h"
+#include "asset_loader/sr_obj_loader.h"
 
 // object
-#include "sr_object.h"
-#include "sr_object_mgr.h"
+#include "object/sr_object.h"
+#include "object/sr_object_mgr.h"
 
 
 // render
