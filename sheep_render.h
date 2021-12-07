@@ -28,11 +28,13 @@
 #include "math/sr_matrix.h"
 #include "math/sr_math.h"
 
+// base data or component
 #include "sr_color.h"
 #include "sr_texture_2d.h"
 #include "sr_screen.h"
+#include "sr_input.h"
 
-// shdaer
+// shader
 #include "shader/sr_shader.h"
 #include "shader/sr_constant_shader.h"
 #include "shader/sr_phong_shader.h"
@@ -44,14 +46,13 @@
 #include "sr_light.h"
 #include "sr_camera.h"
 
-// other
+// asset loader
 #include "sr_obj_loader.h"
 
+// object
 #include "sr_object.h"
-
 #include "sr_object_mgr.h"
 
-#include "sr_input.h"
 
 // render
 #include "render/sr_base_render.h"
