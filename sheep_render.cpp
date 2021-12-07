@@ -9,10 +9,9 @@ int main() {
     camera camera(vec3f(0, 2, -4.0f), vec3f::zero(), vec3f::up());
     light light({1, 1, 1}, {1, 2, 1});
     texture_2d texture(width, height);
-    object_mgr::load_model("../model/cube.obj");
-    std::vector<sr_object *> objs = object_mgr::get_objs();
-    object *obj = objs[0];
+    object_mgr::instance().load_model("../model/cube.obj");
     render::instance().init(&texture, &camera, &light);
+    sr_object *obj = object_mgr::instance().get_first_obj();
 
     while (screen_exit == 0) {
         input::instance().update();
