@@ -7,8 +7,8 @@
 
 namespace SR {
     // obj模型数据加载
-    typedef struct sr_obj_loader {
-        static sr_mesh *load(const char *filename) {
+    typedef struct sr_obj_loader : public sr_singleton<sr_obj_loader> {
+        sr_mesh *load(const char *filename) {
             std::ifstream in;
             in.open(filename, std::ifstream::in);
             if (!in.is_open()) {

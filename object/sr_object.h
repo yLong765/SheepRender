@@ -12,7 +12,7 @@ namespace SR {
 
         sr_object(const char *path) {
             add_comp(new sr_transform());
-            add_comp(obj_loader::load(path));
+            add_comp(obj_loader::instance().load(path));
         }
 
         void add_comp(sr_component *comp) {

@@ -53,7 +53,6 @@
 #include "object/sr_object.h"
 #include "object/sr_object_mgr.h"
 
-
 // render
 #include "render/sr_base_render.h"
 #include "render/sr_wireframe_render.h"
@@ -61,6 +60,5 @@
 #include "render/sr_barycentric_render.h"
 #include "render/sr_depth_render.h"
 #include "render/sr_render.h"
-
 
 #endif //SHEEPRENDER_SHEEP_RENDER_H

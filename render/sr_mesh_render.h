@@ -87,7 +87,7 @@ namespace SR {
         // 顶点计算
         virtual void vertex(int vert_id, vert_in in) = 0;
 
-        // 像素计算(基于重心坐标)(慢)
+        // 像素计算
         virtual void fragment() = 0;
 
     public:
